@@ -1,0 +1,12 @@
+build/
+cmake-build-*/
+
+.claude/
+
+CMakeUserPresets.json
+compile_commands.json
+
+*.obj
+*.obj.d
+*.a
+*.exe

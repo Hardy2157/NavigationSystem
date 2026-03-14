@@ -1,0 +1,23 @@
+#include "core/graph/Edge.h"
+
+namespace nav {
+
+Edge::Edge()
+    : id_(INVALID_ID)
+    , source_(Node::INVALID_ID)
+    , target_(Node::INVALID_ID)
+    , length_(0.0)
+    , capacity_(10.0)  // Default capacity
+    , carCount_(0)
+{}
+
+Edge::Edge(Id id, Node::Id source, Node::Id target, double length)
+    : id_(id)
+    , source_(source)
+    , target_(target)
+    , length_(length)
+    , capacity_(10.0)  // Default capacity
+    , carCount_(0)
+{}
+
+} // namespace nav
