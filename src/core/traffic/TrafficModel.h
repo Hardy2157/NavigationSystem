@@ -11,6 +11,8 @@ public:
     // Constants
     static constexpr double C = 1.0;  // Time constant
     static constexpr double K = 1.0;  // Threshold for congestion
+    static constexpr double VISUAL_YELLOW_RATIO = 0.25;  // Show moderate load earlier in the heatmap
+    static constexpr double VISUAL_RED_RATIO = 0.5;      // Heavy load for visualization
 
     // Calculate travel time for an edge
     // length: physical length of the edge (L)

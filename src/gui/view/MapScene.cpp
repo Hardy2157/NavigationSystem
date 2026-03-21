@@ -2,12 +2,32 @@
 #include "gui/items/NodeItem.h"
 #include "gui/items/EdgeItem.h"
 #include "core/traffic/TrafficModel.h"
+#include <algorithm>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainterPath>
 #include <QPen>
 #include <iostream>
 
 namespace nav {
+
+namespace {
+
+bool containsEdge(const std::vector<Edge::Id>& edgeIds, Edge::Id edgeId) {
+    return std::find(edgeIds.begin(), edgeIds.end(), edgeId) != edgeIds.end();
+}
+
+int displayStatusForEdge(const Edge& edge, bool heatmapVisible) {
+    if (!heatmapVisible) {
+        return 0;
+    }
+
+    return TrafficModel::getCongestionStatus(
+        edge.getCapacity(),
+        static_cast<double>(edge.getCarCount())
+    );
+}
+
+} // namespace
 
 MapScene::MapScene(QObject* parent)
     : QGraphicsScene(parent)
@@ -64,10 +84,15 @@ void MapScene::clearMap() {
     clear();
     nodeItems_.clear();
     edgeItems_.clear();
+    highlightedNodes_.clear();
+    highlightedEdges_.clear();
+    trafficHighlightedEdges_.clear();
     startNode_ = Node::INVALID_ID;
     endNode_ = Node::INVALID_ID;
     clickState_ = 0;
     pathItem_ = nullptr;
+    queryPointMarker_ = nullptr;
+    trafficPointMarker_ = nullptr;
 }
 
 NodeItem* MapScene::getNodeItem(Node::Id id) const {
@@ -81,6 +106,10 @@ EdgeItem* MapScene::getEdgeItem(Edge::Id id) const {
 }
 
 void MapScene::updateEdgeCongestion(Edge::Id id, int congestionStatus) {
+    if (containsEdge(highlightedEdges_, id)) {
+        return;
+    }
+
     EdgeItem* item = getEdgeItem(id);
     if (item) {
         item->updateStyle(congestionStatus);
@@ -286,9 +315,7 @@ void MapScene::clearSpatialHighlights() {
             if (heatmapVisible_ && graph_) {
                 const Edge* edge = graph_->getEdge(id);
                 if (edge) {
-                    status = TrafficModel::getCongestionStatus(
-                        edge->getCapacity(),
-                        static_cast<double>(edge->getCarCount()));
+                    status = displayStatusForEdge(*edge, heatmapVisible_);
                 }
             }
             item->updateStyle(status);
@@ -359,6 +386,20 @@ void MapScene::showQueryPoint(double x, double y) {
     addItem(queryPointMarker_);
 }
 
+void MapScene::showTrafficPoint(double x, double y) {
+    if (trafficPointMarker_) {
+        removeItem(trafficPointMarker_);
+        delete trafficPointMarker_;
+    }
+
+    trafficPointMarker_ = new QGraphicsEllipseItem(x - 8, y - 8, 16, 16);
+    trafficPointMarker_->setBrush(QBrush(QColor(255, 87, 34, 150)));
+    trafficPointMarker_->setPen(QPen(QColor(230, 74, 25), 2));
+    trafficPointMarker_->setZValue(15.0);
+
+    addItem(trafficPointMarker_);
+}
+
 void MapScene::showTrafficEdges(const std::vector<Edge::Id>& edgeIds, const Graph& graph) {
     clearTrafficHighlights();
     trafficHighlightedEdges_ = edgeIds;
@@ -367,10 +408,7 @@ void MapScene::showTrafficEdges(const std::vector<Edge::Id>& edgeIds, const Grap
         EdgeItem* item = getEdgeItem(id);
         const Edge* edge = graph.getEdge(id);
         if (item && edge) {
-            int status = TrafficModel::getCongestionStatus(
-                edge->getCapacity(),
-                static_cast<double>(edge->getCarCount())
-            );
+            int status = displayStatusForEdge(*edge, heatmapVisible_);
             item->updateStyle(status);
             item->setZValue(2.0);  // Above normal edges
         }
@@ -386,9 +424,7 @@ void MapScene::clearTrafficHighlights() {
             if (heatmapVisible_ && graph_) {
                 const Edge* edge = graph_->getEdge(id);
                 if (edge) {
-                    status = TrafficModel::getCongestionStatus(
-                        edge->getCapacity(),
-                        static_cast<double>(edge->getCarCount()));
+                    status = displayStatusForEdge(*edge, heatmapVisible_);
                 }
             }
             item->updateStyle(status);
@@ -409,10 +445,7 @@ void MapScene::updateTrafficHighlights(const Graph& graph) {
         EdgeItem* item = getEdgeItem(id);
         const Edge* edge = graph.getEdge(id);
         if (item && edge) {
-            int status = TrafficModel::getCongestionStatus(
-                edge->getCapacity(),
-                static_cast<double>(edge->getCarCount())
-            );
+            int status = displayStatusForEdge(*edge, heatmapVisible_);
             item->updateStyle(status);
         }
     }

@@ -66,6 +66,7 @@ public:
 
     // Show query point marker
     void showQueryPoint(double x, double y);
+    void showTrafficPoint(double x, double y);
 
     // Traffic visualization for localized view (F4)
     void showTrafficEdges(const std::vector<Edge::Id>& edgeIds, const Graph& graph);

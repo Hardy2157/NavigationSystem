@@ -9,6 +9,7 @@
 #include <QAction>
 #include <QStatusBar>
 #include <QLabel>
+#include <algorithm>
 #include <iostream>
 #include <unordered_set>
 #include <limits>
@@ -162,6 +163,12 @@ void MainWindow::generateNewMap(int numNodes, double width, double height) {
 
     // Create new simulator for the new graph (uses Dijkstra for route computation)
     simulator_ = std::make_unique<TrafficSimulator>(*graph_, dijkstraPathfinder_.get());
+
+    // Scale the default traffic load to the generated graph size so the heatmap
+    // can surface non-green states on the default 10k-node map.
+    const int edgeCount = static_cast<int>(graph_->getEdgeCount());
+    simulator_->setSpawnRate(std::clamp(edgeCount / 500, 20, 40));
+    simulator_->setMaxCars(std::clamp(edgeCount / 4, 3000, 5000));
 
     // Set simulation running BEFORE loadGraph so updatePathfinder() picks DynamicPathFinder
     simulationRunning_ = true;
@@ -425,8 +432,8 @@ void MainWindow::onShowTrafficNearRequested(double x, double y, double radius) {
     // Show traffic colors on those edges
     mapScene_->showTrafficEdges(nearbyEdges, *graph_);
 
-    // Show query point marker
-    mapScene_->showQueryPoint(x, y);
+    // Show traffic query point marker
+    mapScene_->showTrafficPoint(x, y);
 
     // Auto-focus on the area
     QRectF viewBounds(x - radius, y - radius, radius * 2, radius * 2);
