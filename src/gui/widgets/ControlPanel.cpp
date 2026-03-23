@@ -7,7 +7,7 @@
 namespace nav {
 
 ControlPanel::ControlPanel(QWidget* parent)
-    : QDockWidget("Control Panel", parent)
+    : QDockWidget("控制面板", parent)
 {
     setupUi();
 }
@@ -18,7 +18,7 @@ void ControlPanel::setupUi() {
     mainLayout->setSpacing(10);
 
     // ========== Section 1: Spatial Query ==========
-    QGroupBox* spatialGroup = new QGroupBox("Spatial Query (F1)", mainWidget);
+    QGroupBox* spatialGroup = new QGroupBox("空间查询 (F1)", mainWidget);
     QVBoxLayout* spatialLayout = new QVBoxLayout(spatialGroup);
 
     QFormLayout* coordForm = new QFormLayout();
@@ -28,26 +28,26 @@ void ControlPanel::setupUi() {
     xCoordSpinBox_->setValue(5000.0);
     xCoordSpinBox_->setDecimals(2);
     xCoordSpinBox_->setSingleStep(100.0);
-    coordForm->addRow("X Coordinate:", xCoordSpinBox_);
+    coordForm->addRow("X 坐标:", xCoordSpinBox_);
 
     yCoordSpinBox_ = new QDoubleSpinBox();
     yCoordSpinBox_->setRange(0.0, 10000.0);
     yCoordSpinBox_->setValue(5000.0);
     yCoordSpinBox_->setDecimals(2);
     yCoordSpinBox_->setSingleStep(100.0);
-    coordForm->addRow("Y Coordinate:", yCoordSpinBox_);
+    coordForm->addRow("Y 坐标:", yCoordSpinBox_);
 
     kNearestSpinBox_ = new QSpinBox();
     kNearestSpinBox_->setRange(1, 1000);
     kNearestSpinBox_->setValue(100);
-    coordForm->addRow("K Nearest:", kNearestSpinBox_);
+    coordForm->addRow("K 近邻:", kNearestSpinBox_);
 
     spatialLayout->addLayout(coordForm);
 
-    findNearestButton_ = new QPushButton("Find Nearest Nodes");
+    findNearestButton_ = new QPushButton("查找最近节点");
     spatialLayout->addWidget(findNearestButton_);
 
-    spatialResultLabel_ = new QLabel("Result: -");
+    spatialResultLabel_ = new QLabel("结果: -");
     spatialResultLabel_->setWordWrap(true);
     spatialResultLabel_->setStyleSheet("QLabel { background-color: #f0f0f0; padding: 5px; border-radius: 3px; }");
     spatialLayout->addWidget(spatialResultLabel_);
@@ -55,7 +55,7 @@ void ControlPanel::setupUi() {
     mainLayout->addWidget(spatialGroup);
 
     // ========== Section 2: Path by ID ==========
-    QGroupBox* pathGroup = new QGroupBox("Path by ID (F2/F4)", mainWidget);
+    QGroupBox* pathGroup = new QGroupBox("路径查找 (F2/F4)", mainWidget);
     QVBoxLayout* pathLayout = new QVBoxLayout(pathGroup);
 
     QFormLayout* pathForm = new QFormLayout();
@@ -63,26 +63,26 @@ void ControlPanel::setupUi() {
     startNodeSpinBox_ = new QSpinBox();
     startNodeSpinBox_->setRange(0, 99999);
     startNodeSpinBox_->setValue(0);
-    pathForm->addRow("Start Node ID:", startNodeSpinBox_);
+    pathForm->addRow("起始节点 ID:", startNodeSpinBox_);
 
     endNodeSpinBox_ = new QSpinBox();
     endNodeSpinBox_->setRange(0, 99999);
     endNodeSpinBox_->setValue(9999);
-    pathForm->addRow("End Node ID:", endNodeSpinBox_);
+    pathForm->addRow("终止节点 ID:", endNodeSpinBox_);
 
     // Routing criteria selection
     routingCriteriaCombo_ = new QComboBox();
-    routingCriteriaCombo_->addItem("Shortest Distance (F2)", static_cast<int>(RoutingCriteria::ShortestDistance));
-    routingCriteriaCombo_->addItem("Fastest Time (F4)", static_cast<int>(RoutingCriteria::FastestTime));
-    routingCriteriaCombo_->setToolTip("F2: Distance-based (Dijkstra)\nF4: Traffic-aware (Dynamic)");
-    pathForm->addRow("Routing Criteria:", routingCriteriaCombo_);
+    routingCriteriaCombo_->addItem("最短距离 (F2)", static_cast<int>(RoutingCriteria::ShortestDistance));
+    routingCriteriaCombo_->addItem("最快时间 (F4)", static_cast<int>(RoutingCriteria::FastestTime));
+    routingCriteriaCombo_->setToolTip("F2: 基于距离 (Dijkstra)\nF4: 基于交通 (动态路由)");
+    pathForm->addRow("路由策略:", routingCriteriaCombo_);
 
     pathLayout->addLayout(pathForm);
 
-    computePathButton_ = new QPushButton("Compute Path");
+    computePathButton_ = new QPushButton("计算路径");
     pathLayout->addWidget(computePathButton_);
 
-    pathResultLabel_ = new QLabel("Result: -");
+    pathResultLabel_ = new QLabel("结果: -");
     pathResultLabel_->setWordWrap(true);
     pathResultLabel_->setStyleSheet("QLabel { background-color: #f0f0f0; padding: 5px; border-radius: 3px; }");
     pathLayout->addWidget(pathResultLabel_);
@@ -90,7 +90,7 @@ void ControlPanel::setupUi() {
     mainLayout->addWidget(pathGroup);
 
     // ========== Section 3: Traffic View (F4) ==========
-    QGroupBox* trafficGroup = new QGroupBox("Traffic View (F4)", mainWidget);
+    QGroupBox* trafficGroup = new QGroupBox("交通视图 (F4)", mainWidget);
     QVBoxLayout* trafficLayout = new QVBoxLayout(trafficGroup);
 
     QFormLayout* trafficForm = new QFormLayout();
@@ -100,28 +100,28 @@ void ControlPanel::setupUi() {
     trafficXSpinBox_->setValue(5000.0);
     trafficXSpinBox_->setDecimals(2);
     trafficXSpinBox_->setSingleStep(100.0);
-    trafficForm->addRow("X Coordinate:", trafficXSpinBox_);
+    trafficForm->addRow("X 坐标:", trafficXSpinBox_);
 
     trafficYSpinBox_ = new QDoubleSpinBox();
     trafficYSpinBox_->setRange(0.0, 10000.0);
     trafficYSpinBox_->setValue(5000.0);
     trafficYSpinBox_->setDecimals(2);
     trafficYSpinBox_->setSingleStep(100.0);
-    trafficForm->addRow("Y Coordinate:", trafficYSpinBox_);
+    trafficForm->addRow("Y 坐标:", trafficYSpinBox_);
 
     trafficRadiusSpinBox_ = new QDoubleSpinBox();
     trafficRadiusSpinBox_->setRange(100.0, 5000.0);
     trafficRadiusSpinBox_->setValue(500.0);
     trafficRadiusSpinBox_->setDecimals(0);
     trafficRadiusSpinBox_->setSingleStep(100.0);
-    trafficForm->addRow("View Radius:", trafficRadiusSpinBox_);
+    trafficForm->addRow("查看半径:", trafficRadiusSpinBox_);
 
     trafficLayout->addLayout(trafficForm);
 
-    showTrafficButton_ = new QPushButton("Show Traffic Near Point");
+    showTrafficButton_ = new QPushButton("查看附近交通");
     trafficLayout->addWidget(showTrafficButton_);
 
-    trafficResultLabel_ = new QLabel("Result: -");
+    trafficResultLabel_ = new QLabel("结果: -");
     trafficResultLabel_->setWordWrap(true);
     trafficResultLabel_->setStyleSheet("QLabel { background-color: #f0f0f0; padding: 5px; border-radius: 3px; }");
     trafficLayout->addWidget(trafficResultLabel_);
@@ -129,7 +129,7 @@ void ControlPanel::setupUi() {
     mainLayout->addWidget(trafficGroup);
 
     // ========== Clear Button ==========
-    clearButton_ = new QPushButton("Clear All Highlights");
+    clearButton_ = new QPushButton("清除所有高亮");
     clearButton_->setStyleSheet("QPushButton { background-color: #ffcccc; }");
     mainLayout->addWidget(clearButton_);
 
@@ -171,7 +171,7 @@ void ControlPanel::onFindNearestClicked() {
     double y = yCoordSpinBox_->value();
     int k = kNearestSpinBox_->value();
 
-    spatialResultLabel_->setText("Searching...");
+    spatialResultLabel_->setText("搜索中...");
     emit findNearestRequested(x, y, k);
 }
 
@@ -180,7 +180,7 @@ void ControlPanel::onComputePathClicked() {
     uint32_t endId = static_cast<uint32_t>(endNodeSpinBox_->value());
     RoutingCriteria criteria = getRoutingCriteria();
 
-    pathResultLabel_->setText("Computing...");
+    pathResultLabel_->setText("计算中...");
     emit computePathRequested(startId, endId, criteria);
 }
 
@@ -190,9 +190,9 @@ RoutingCriteria ControlPanel::getRoutingCriteria() const {
 }
 
 void ControlPanel::onClearClicked() {
-    spatialResultLabel_->setText("Result: -");
-    pathResultLabel_->setText("Result: -");
-    trafficResultLabel_->setText("Result: -");
+    spatialResultLabel_->setText("结果: -");
+    pathResultLabel_->setText("结果: -");
+    trafficResultLabel_->setText("结果: -");
     emit clearHighlightsRequested();
 }
 
@@ -201,28 +201,28 @@ void ControlPanel::onShowTrafficClicked() {
     double y = trafficYSpinBox_->value();
     double radius = trafficRadiusSpinBox_->value();
 
-    trafficResultLabel_->setText("Loading...");
+    trafficResultLabel_->setText("加载中...");
     emit showTrafficNearRequested(x, y, radius);
 }
 
 void ControlPanel::showSpatialQueryResult(int nodeCount, int edgeCount) {
-    spatialResultLabel_->setText(QString("Found %1 nodes\nConnected edges: %2")
+    spatialResultLabel_->setText(QString("找到 %1 个节点\n关联边: %2")
                                      .arg(nodeCount)
                                      .arg(edgeCount));
 }
 
 void ControlPanel::showPathResult(int nodeCount, double totalCost, bool found) {
     if (found) {
-        pathResultLabel_->setText(QString("Path found!\nNodes: %1\nTotal cost: %2")
+        pathResultLabel_->setText(QString("路径已找到！\n节点数: %1\n总开销: %2")
                                       .arg(nodeCount)
                                       .arg(totalCost, 0, 'f', 2));
     } else {
-        pathResultLabel_->setText("No path found!");
+        pathResultLabel_->setText("未找到路径！");
     }
 }
 
 void ControlPanel::showTrafficResult(int edgeCount) {
-    trafficResultLabel_->setText(QString("Showing %1 roads\nColors update dynamically").arg(edgeCount));
+    trafficResultLabel_->setText(QString("显示 %1 条道路\n颜色动态更新").arg(edgeCount));
 }
 
 } // namespace nav

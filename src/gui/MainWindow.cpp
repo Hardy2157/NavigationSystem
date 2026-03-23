@@ -4,11 +4,14 @@
 #include "gui/widgets/ControlPanel.h"
 #include "gui/widgets/GenerateMapDialog.h"
 #include "core/spatial/BoundingBox.h"
+#include "core/io/GraphIO.h"
 #include <QMenuBar>
 #include <QToolBar>
 #include <QAction>
 #include <QStatusBar>
 #include <QLabel>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <algorithm>
 #include <iostream>
 #include <unordered_set>
@@ -39,13 +42,17 @@ MainWindow::MainWindow(QWidget* parent)
     // Connect scene signals
     connect(mapScene_, &MapScene::pathFound, this, &MainWindow::onPathFound);
     connect(mapScene_, &MapScene::statusMessage, this, &MainWindow::onStatusMessage);
+    connect(mapScene_, &MapScene::errorOccurred, this, [this](const QString& title, const QString& msg) {
+        QMessageBox::warning(this, title, msg);
+        statusBar()->showMessage(msg);
+    });
 
     // Set window properties
-    setWindowTitle("Navigation System");
+    setWindowTitle("导航系统");
     resize(1400, 900);
 
     // Show status
-    statusBar()->showMessage("Ready. Use 'Generate Map' to create a new map. Click nodes or use Control Panel.");
+    statusBar()->showMessage("就绪。使用\"生成地图\"创建新地图，点击节点或使用控制面板。");
 }
 
 MainWindow::~MainWindow() {
@@ -64,48 +71,62 @@ void MainWindow::setupUi() {
 
 void MainWindow::setupMenuBar() {
     // File menu
-    QMenu* fileMenu = menuBar()->addMenu("&File");
+    QMenu* fileMenu = menuBar()->addMenu("文件(&F)");
 
-    QAction* generateAction = fileMenu->addAction("&Generate New Map");
+    QAction* generateAction = fileMenu->addAction("生成新地图(&G)");
     generateAction->setShortcut(QKeySequence("Ctrl+G"));
     connect(generateAction, &QAction::triggered, this, &MainWindow::onGenerateMap);
 
+    QAction* saveAction = fileMenu->addAction("保存地图(&S)");
+    saveAction->setShortcut(QKeySequence("Ctrl+S"));
+    connect(saveAction, &QAction::triggered, this, &MainWindow::onSaveMap);
+
+    QAction* loadAction = fileMenu->addAction("加载地图(&L)");
+    loadAction->setShortcut(QKeySequence("Ctrl+O"));
+    connect(loadAction, &QAction::triggered, this, &MainWindow::onLoadMap);
+
     fileMenu->addSeparator();
 
-    QAction* exitAction = fileMenu->addAction("E&xit");
+    QAction* exitAction = fileMenu->addAction("退出(&X)");
     exitAction->setShortcut(QKeySequence::Quit);
     connect(exitAction, &QAction::triggered, this, &QMainWindow::close);
 
     // View menu
-    QMenu* viewMenu = menuBar()->addMenu("&View");
+    QMenu* viewMenu = menuBar()->addMenu("视图(&V)");
 
-    QAction* zoomFitAction = viewMenu->addAction("Zoom to &Fit");
+    QAction* zoomFitAction = viewMenu->addAction("适应窗口(&F)");
     zoomFitAction->setShortcut(QKeySequence("Ctrl+0"));
     connect(zoomFitAction, &QAction::triggered, this, &MainWindow::onZoomToFit);
 
     // Simulation menu
-    QMenu* simMenu = menuBar()->addMenu("&Simulation");
+    QMenu* simMenu = menuBar()->addMenu("仿真(&S)");
 
-    simulationAction_ = simMenu->addAction("&Show Traffic Heatmap");
+    simulationAction_ = simMenu->addAction("显示交通热力图(&T)");
     simulationAction_->setShortcut(QKeySequence("Ctrl+T"));
     simulationAction_->setCheckable(true);
     connect(simulationAction_, &QAction::triggered, this, &MainWindow::onToggleSimulation);
 }
 
 void MainWindow::setupToolBar() {
-    QToolBar* toolbar = addToolBar("Main Toolbar");
+    QToolBar* toolbar = addToolBar("主工具栏");
     toolbar->setMovable(false);
 
-    QAction* generateAction = toolbar->addAction("Generate Map");
+    QAction* generateAction = toolbar->addAction("生成地图");
     connect(generateAction, &QAction::triggered, this, &MainWindow::onGenerateMap);
 
-    QAction* zoomFitAction = toolbar->addAction("Zoom to Fit");
+    QAction* saveToolAction = toolbar->addAction("保存地图");
+    connect(saveToolAction, &QAction::triggered, this, &MainWindow::onSaveMap);
+
+    QAction* loadToolAction = toolbar->addAction("加载地图");
+    connect(loadToolAction, &QAction::triggered, this, &MainWindow::onLoadMap);
+
+    QAction* zoomFitAction = toolbar->addAction("适应窗口");
     connect(zoomFitAction, &QAction::triggered, this, &MainWindow::onZoomToFit);
 
     toolbar->addSeparator();
 
     // Add heatmap toggle to toolbar
-    QAction* simAction = toolbar->addAction("Show/Hide Heatmap");
+    QAction* simAction = toolbar->addAction("显示/隐藏热力图");
     simAction->setCheckable(true);
     connect(simAction, &QAction::triggered, this, &MainWindow::onToggleSimulation);
     connect(simulationAction_, &QAction::toggled, simAction, &QAction::setChecked);
@@ -140,7 +161,7 @@ void MainWindow::loadGraph(const Graph& graph) {
         controlPanel_->setCoordinateRange(0.0, mapWidth_, 0.0, mapHeight_);
     }
 
-    statusBar()->showMessage(QString("Loaded map: %1 nodes, %2 edges. Click nodes or use Control Panel.")
+    statusBar()->showMessage(QString("已加载地图: %1 个节点, %2 条边。点击节点或使用控制面板。")
                                  .arg(graph.getNodeCount())
                                  .arg(graph.getEdgeCount()));
 }
@@ -152,7 +173,7 @@ void MainWindow::generateNewMap(int numNodes, double width, double height) {
     mapWidth_ = width;
     mapHeight_ = height;
 
-    statusBar()->showMessage("Generating map...");
+    statusBar()->showMessage("正在生成地图...");
 
     // Clear and regenerate
     graph_ = std::make_unique<Graph>();
@@ -161,11 +182,13 @@ void MainWindow::generateNewMap(int numNodes, double width, double height) {
     std::cout << "Generated map: " << graph_->getNodeCount() << " nodes, "
               << graph_->getEdgeCount() << " edges" << std::endl;
 
-    // Create new simulator for the new graph (uses Dijkstra for route computation)
+    startSimulation();
+}
+
+void MainWindow::startSimulation() {
     simulator_ = std::make_unique<TrafficSimulator>(*graph_, dijkstraPathfinder_.get());
 
-    // Scale the default traffic load to the generated graph size so the heatmap
-    // can surface non-green states on the default 10k-node map.
+    // Scale traffic load to graph size
     static constexpr int kEdgesPerSpawn = 500;
     static constexpr int kMinSpawnRate  = 20;
     static constexpr int kMaxSpawnRate  = 40;
@@ -180,14 +203,11 @@ void MainWindow::generateNewMap(int numNodes, double width, double height) {
     // Set simulation running BEFORE loadGraph so updatePathfinder() picks DynamicPathFinder
     simulationRunning_ = true;
 
-    // Load into scene
     loadGraph(*graph_);
 
-    // Start traffic simulation in background (always running)
-    simulationTimer_->start(100);  // 100ms interval
+    simulationTimer_->start(100);
     std::cout << "Traffic simulation started (background)" << std::endl;
 
-    // Reset heatmap visibility to off by default
     heatmapVisible_ = false;
     mapScene_->setHeatmapVisible(false);
     simulationAction_->setChecked(false);
@@ -236,8 +256,8 @@ void MainWindow::onToggleSimulation() {
     mapScene_->setHeatmapVisible(heatmapVisible_);
 
     if (heatmapVisible_) {
-        simulationAction_->setText("&Hide Traffic Heatmap");
-        statusBar()->showMessage("Traffic heatmap visible. Colors show congestion levels.");
+        simulationAction_->setText("隐藏交通热力图(&T)");
+        statusBar()->showMessage("交通热力图已显示。颜色表示拥堵程度。");
         std::cout << "Traffic heatmap enabled" << std::endl;
 
         // Immediately update all edge colors to show current traffic state
@@ -252,8 +272,8 @@ void MainWindow::onToggleSimulation() {
             }
         }
     } else {
-        simulationAction_->setText("&Show Traffic Heatmap");
-        statusBar()->showMessage("Traffic heatmap hidden. Edges show default green.");
+        simulationAction_->setText("显示交通热力图(&T)");
+        statusBar()->showMessage("交通热力图已隐藏。道路显示默认绿色。");
         std::cout << "Traffic heatmap disabled" << std::endl;
 
         // Reset all edges to default green color
@@ -307,7 +327,8 @@ void MainWindow::onStatusMessage(const QString& message) {
 void MainWindow::onFindNearestRequested(double x, double y, int k) {
     if (!quadTree_ || !graph_) {
         controlPanel_->showSpatialQueryResult(0, 0);
-        statusBar()->showMessage("QuadTree not initialized!");
+        QMessageBox::warning(this, "查询失败", "四叉树未初始化！请先生成或加载地图。");
+        statusBar()->showMessage("四叉树未初始化！");
         return;
     }
 
@@ -347,7 +368,7 @@ void MainWindow::onFindNearestRequested(double x, double y, int k) {
     mapView_->focusOnPoint(x, y, 2.0);
 
     controlPanel_->showSpatialQueryResult(static_cast<int>(nearestNodes.size()), edgeCount);
-    statusBar()->showMessage(QString("Spatial Query: Found %1 nearest nodes with %2 connected edges")
+    statusBar()->showMessage(QString("空间查询: 找到 %1 个最近节点，关联 %2 条边")
                                  .arg(nearestNodes.size())
                                  .arg(edgeCount));
 }
@@ -355,7 +376,24 @@ void MainWindow::onFindNearestRequested(double x, double y, int k) {
 void MainWindow::onComputePathRequested(uint32_t startId, uint32_t endId, RoutingCriteria criteria) {
     if (!graph_) {
         controlPanel_->showPathResult(0, 0.0, false);
-        statusBar()->showMessage("Graph not initialized!");
+        QMessageBox::warning(this, "计算失败", "图数据未初始化！请先生成或加载地图。");
+        statusBar()->showMessage("图数据未初始化！");
+        return;
+    }
+
+    // Validate node IDs
+    if (!graph_->getNode(startId)) {
+        controlPanel_->showPathResult(0, 0.0, false);
+        QMessageBox::warning(this, "计算失败",
+            QString("起始节点 ID %1 不存在！有效范围: 0 - %2")
+                .arg(startId).arg(graph_->getNodeCount() - 1));
+        return;
+    }
+    if (!graph_->getNode(endId)) {
+        controlPanel_->showPathResult(0, 0.0, false);
+        QMessageBox::warning(this, "计算失败",
+            QString("终止节点 ID %1 不存在！有效范围: 0 - %2")
+                .arg(endId).arg(graph_->getNodeCount() - 1));
         return;
     }
 
@@ -409,7 +447,8 @@ void MainWindow::onComputePathRequested(uint32_t startId, uint32_t endId, Routin
 void MainWindow::onShowTrafficNearRequested(double x, double y, double radius) {
     if (!quadTree_ || !graph_) {
         controlPanel_->showTrafficResult(0);
-        statusBar()->showMessage("QuadTree not initialized!");
+        QMessageBox::warning(this, "查询失败", "四叉树未初始化！请先生成或加载地图。");
+        statusBar()->showMessage("四叉树未初始化！");
         return;
     }
 
@@ -447,7 +486,7 @@ void MainWindow::onShowTrafficNearRequested(double x, double y, double radius) {
     mapView_->focusOnBounds(viewBounds, 50.0);
 
     controlPanel_->showTrafficResult(static_cast<int>(nearbyEdges.size()));
-    statusBar()->showMessage(QString("Traffic View: Showing %1 roads near (%2, %3)")
+    statusBar()->showMessage(QString("交通视图: 显示 (%2, %3) 附近 %1 条道路")
                                  .arg(nearbyEdges.size())
                                  .arg(x, 0, 'f', 0)
                                  .arg(y, 0, 'f', 0));
@@ -457,7 +496,70 @@ void MainWindow::onClearHighlightsRequested() {
     mapScene_->clearSpatialHighlights();
     mapScene_->clearTrafficHighlights();
     mapScene_->clearPathSelection();
-    statusBar()->showMessage("All highlights cleared.");
+    statusBar()->showMessage("所有高亮已清除。");
+}
+
+void MainWindow::onSaveMap() {
+    if (!graph_ || graph_->getNodeCount() == 0) {
+        QMessageBox::warning(this, "保存失败", "当前没有可保存的地图！请先生成地图。");
+        return;
+    }
+
+    QString filePath = QFileDialog::getSaveFileName(
+        this, "保存地图", "", "导航地图文件 (*.navmap);;所有文件 (*)");
+
+    if (filePath.isEmpty()) {
+        return;
+    }
+
+    statusBar()->showMessage("正在保存地图...");
+
+    bool success = GraphIO::save(filePath.toStdString(), *graph_, mapWidth_, mapHeight_);
+
+    if (success) {
+        statusBar()->showMessage(QString("地图已保存: %1").arg(filePath));
+    } else {
+        QMessageBox::warning(this, "保存失败",
+            QString("无法保存地图文件！\n%1").arg(
+                QString::fromStdString(GraphIO::getLastError())));
+        statusBar()->showMessage("地图保存失败！");
+    }
+}
+
+void MainWindow::onLoadMap() {
+    QString filePath = QFileDialog::getOpenFileName(
+        this, "加载地图", "", "导航地图文件 (*.navmap);;所有文件 (*)");
+
+    if (filePath.isEmpty()) {
+        return;
+    }
+
+    statusBar()->showMessage("正在加载地图...");
+
+    MapFileData fileData;
+    bool success = GraphIO::load(filePath.toStdString(), fileData);
+
+    if (!success) {
+        QMessageBox::warning(this, "加载失败",
+            QString("无法加载地图文件！\n%1").arg(
+                QString::fromStdString(GraphIO::getLastError())));
+        statusBar()->showMessage("地图加载失败！");
+        return;
+    }
+
+    // Stop existing simulation
+    simulationTimer_->stop();
+
+    mapWidth_ = fileData.width;
+    mapHeight_ = fileData.height;
+    graph_ = std::make_unique<Graph>(std::move(fileData.graph));
+
+    startSimulation();
+
+    statusBar()->showMessage(QString("地图已加载: %1 个节点, %2 条边。文件: %3")
+                                 .arg(graph_->getNodeCount())
+                                 .arg(graph_->getEdgeCount())
+                                 .arg(filePath));
 }
 
 } // namespace nav

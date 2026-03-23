@@ -3,6 +3,7 @@ add_library(NavigationCore STATIC
     core/graph/Node.cpp
     core/graph/Edge.cpp
     core/graph/Graph.cpp
+    core/io/GraphIO.cpp
     core/spatial/BoundingBox.cpp
     core/spatial/QuadTree.cpp
     core/generation/GridPerturbationGenerator.cpp

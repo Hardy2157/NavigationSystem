@@ -16,6 +16,7 @@ public:
 
     // Node operations
     Node::Id addNode(const Point2D& position);
+    Node::Id addNodeWithId(Node::Id id, const Point2D& position);
     const Node* getNode(Node::Id id) const;
     Node* getNode(Node::Id id);
     size_t getNodeCount() const { return nodes_.size(); }
@@ -23,6 +24,8 @@ public:
 
     // Edge operations
     Edge::Id addEdge(Node::Id source, Node::Id target);
+    Edge::Id addEdgeWithId(Edge::Id id, Node::Id source, Node::Id target,
+                           double length, double capacity);
     const Edge* getEdge(Edge::Id id) const;
     Edge* getEdge(Edge::Id id);
     size_t getEdgeCount() const { return edges_.size(); }
@@ -35,6 +38,7 @@ public:
     // Graph properties
     bool isConnected() const;
     void clear();
+    void reserve(size_t nodeCount, size_t edgeCount);
 
 private:
     // Helper for connectivity check (DFS)

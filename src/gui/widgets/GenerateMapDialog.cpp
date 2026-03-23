@@ -10,7 +10,7 @@ namespace nav {
 GenerateMapDialog::GenerateMapDialog(QWidget* parent)
     : QDialog(parent)
 {
-    setWindowTitle("Generate New Map");
+    setWindowTitle("生成新地图");
     setupUi();
 }
 
@@ -18,7 +18,7 @@ void GenerateMapDialog::setupUi() {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
     // Settings group
-    QGroupBox* settingsGroup = new QGroupBox("Map Settings", this);
+    QGroupBox* settingsGroup = new QGroupBox("地图设置", this);
     QFormLayout* formLayout = new QFormLayout(settingsGroup);
 
     // Node count (minimum 10,000)
@@ -26,8 +26,8 @@ void GenerateMapDialog::setupUi() {
     nodeCountSpinBox_->setRange(10000, 1000000);
     nodeCountSpinBox_->setValue(10000);
     nodeCountSpinBox_->setSingleStep(1000);
-    nodeCountSpinBox_->setToolTip("Number of nodes (minimum 10,000)");
-    formLayout->addRow("Number of Nodes (N >= 10000):", nodeCountSpinBox_);
+    nodeCountSpinBox_->setToolTip("节点数量（最少 10,000）");
+    formLayout->addRow("节点数量 (N >= 10000):", nodeCountSpinBox_);
 
     // Map width
     widthSpinBox_ = new QDoubleSpinBox();
@@ -35,7 +35,7 @@ void GenerateMapDialog::setupUi() {
     widthSpinBox_->setValue(10000.0);
     widthSpinBox_->setSingleStep(1000.0);
     widthSpinBox_->setDecimals(0);
-    formLayout->addRow("Map Width:", widthSpinBox_);
+    formLayout->addRow("地图宽度:", widthSpinBox_);
 
     // Map height
     heightSpinBox_ = new QDoubleSpinBox();
@@ -43,14 +43,14 @@ void GenerateMapDialog::setupUi() {
     heightSpinBox_->setValue(10000.0);
     heightSpinBox_->setSingleStep(1000.0);
     heightSpinBox_->setDecimals(0);
-    formLayout->addRow("Map Height:", heightSpinBox_);
+    formLayout->addRow("地图高度:", heightSpinBox_);
 
     mainLayout->addWidget(settingsGroup);
 
     // Buttons
     QHBoxLayout* buttonLayout = new QHBoxLayout();
-    generateButton_ = new QPushButton("Generate");
-    cancelButton_ = new QPushButton("Cancel");
+    generateButton_ = new QPushButton("生成");
+    cancelButton_ = new QPushButton("取消");
     buttonLayout->addStretch();
     buttonLayout->addWidget(generateButton_);
     buttonLayout->addWidget(cancelButton_);

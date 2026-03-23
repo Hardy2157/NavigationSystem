@@ -9,9 +9,15 @@ const std::vector<Edge::Id> Graph::emptyEdgeList_;
 Graph::Graph() : nextNodeId_(0), nextEdgeId_(0) {}
 
 Node::Id Graph::addNode(const Point2D& position) {
-    Node::Id id = nextNodeId_++;
+    return addNodeWithId(nextNodeId_++, position);
+}
+
+Node::Id Graph::addNodeWithId(Node::Id id, const Point2D& position) {
     nodes_.emplace(id, Node(id, position));
-    adjacencyList_[id] = std::vector<Edge::Id>();
+    adjacencyList_[id];  // default-construct empty vector
+    if (id >= nextNodeId_) {
+        nextNodeId_ = id + 1;
+    }
     return id;
 }
 
@@ -26,24 +32,26 @@ Node* Graph::getNode(Node::Id id) {
 }
 
 Edge::Id Graph::addEdge(Node::Id source, Node::Id target) {
-    // Verify both nodes exist
+    const Node* s = getNode(source);
+    const Node* t = getNode(target);
+    if (!s || !t) return Edge::INVALID_ID;
+    double length = s->getPosition().distanceTo(t->getPosition());
+    return addEdgeWithId(nextEdgeId_++, source, target, length, 10.0);
+}
+
+Edge::Id Graph::addEdgeWithId(Edge::Id id, Node::Id source, Node::Id target,
+                               double length, double capacity) {
     if (nodes_.find(source) == nodes_.end() || nodes_.find(target) == nodes_.end()) {
         return Edge::INVALID_ID;
     }
-
-    // Calculate edge length based on node positions
-    const Node* sourceNode = getNode(source);
-    const Node* targetNode = getNode(target);
-    double length = sourceNode->getPosition().distanceTo(targetNode->getPosition());
-
-    // Create edge
-    Edge::Id id = nextEdgeId_++;
-    edges_.emplace(id, Edge(id, source, target, length));
-
-    // Update adjacency list (undirected graph - add edge in both directions)
+    Edge edge(id, source, target, length);
+    edge.setCapacity(capacity);
+    edges_.emplace(id, edge);
     adjacencyList_[source].push_back(id);
     adjacencyList_[target].push_back(id);
-
+    if (id >= nextEdgeId_) {
+        nextEdgeId_ = id + 1;
+    }
     return id;
 }
 
@@ -124,6 +132,12 @@ void Graph::clear() {
     adjacencyList_.clear();
     nextNodeId_ = 0;
     nextEdgeId_ = 0;
+}
+
+void Graph::reserve(size_t nodeCount, size_t edgeCount) {
+    nodes_.reserve(nodeCount);
+    edges_.reserve(edgeCount);
+    adjacencyList_.reserve(nodeCount);
 }
 
 } // namespace nav

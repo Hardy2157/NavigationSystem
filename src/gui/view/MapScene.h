@@ -78,6 +78,7 @@ public:
 signals:
     void pathFound(const PathResult& result);
     void statusMessage(const QString& message);
+    void errorOccurred(const QString& title, const QString& message);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;

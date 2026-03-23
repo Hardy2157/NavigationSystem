@@ -165,7 +165,7 @@ void MapScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
             startNode_ = clickedId;
             highlightNode(startNode_, QColor(33, 150, 243));  // Blue
             clickState_ = 1;
-            emit statusMessage(QString("Start: Node %1. Click another node for destination.").arg(startNode_));
+            emit statusMessage(QString("起点: 节点 %1。请点击另一个节点作为终点。").arg(startNode_));
             break;
 
         case 1:  // Second click: set end node and find path
@@ -182,14 +182,14 @@ void MapScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
                 if (result.found) {
                     showPath(result);
                     emit pathFound(result);
-                    emit statusMessage(QString("Path found: %1 nodes, cost: %2")
+                    emit statusMessage(QString("路径已找到: %1 个节点, 开销: %2")
                                            .arg(result.pathNodes.size())
                                            .arg(result.totalCost, 0, 'f', 2));
                 } else {
-                    emit statusMessage("No path found!");
+                    emit errorOccurred("路径查找", "未找到路径！");
                 }
             } else {
-                emit statusMessage("Pathfinder not configured!");
+                emit errorOccurred("路径查找", "路径查找器未配置！请先生成或加载地图。");
             }
             clickState_ = 2;
             break;
@@ -199,7 +199,7 @@ void MapScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
             startNode_ = clickedId;
             highlightNode(startNode_, QColor(33, 150, 243));  // Blue
             clickState_ = 1;
-            emit statusMessage(QString("Start: Node %1. Click another node for destination.").arg(startNode_));
+            emit statusMessage(QString("起点: 节点 %1。请点击另一个节点作为终点。").arg(startNode_));
             break;
     }
 
@@ -332,7 +332,7 @@ PathResult MapScene::findPathById(Node::Id startId, Node::Id endId) {
 
     if (!graph_ || !pathfinder_) {
         result.found = false;
-        emit statusMessage("Pathfinder not configured!");
+        emit errorOccurred("路径查找", "路径查找器未配置！请先生成或加载地图。");
         return result;
     }
 
@@ -353,11 +353,11 @@ PathResult MapScene::findPathById(Node::Id startId, Node::Id endId) {
     if (result.found) {
         showPath(result);
         emit pathFound(result);
-        emit statusMessage(QString("Path found: %1 nodes, cost: %2")
+        emit statusMessage(QString("路径已找到: %1 个节点, 开销: %2")
                                .arg(result.pathNodes.size())
                                .arg(result.totalCost, 0, 'f', 2));
     } else {
-        emit statusMessage(QString("No path found from Node %1 to Node %2!")
+        emit errorOccurred("路径查找", QString("未找到从节点 %1 到节点 %2 的路径！")
                                .arg(startId).arg(endId));
     }
 

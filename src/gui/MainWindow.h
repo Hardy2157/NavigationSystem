@@ -10,6 +10,7 @@
 #include "core/algorithms/DynamicPathFinder.h"
 #include "core/traffic/TrafficSimulator.h"
 #include "core/spatial/QuadTree.h"
+#include "core/io/GraphIO.h"
 #include "gui/widgets/ControlPanel.h"
 
 namespace nav {
@@ -32,6 +33,8 @@ public:
 
 private slots:
     void onGenerateMap();
+    void onSaveMap();
+    void onLoadMap();
     void onZoomToFit();
     void onToggleSimulation();
     void onSimulationStep();
@@ -51,6 +54,7 @@ private:
     void setupControlPanel();
     void updatePathfinder();
     void rebuildQuadTree();
+    void startSimulation();
 
     MapView* mapView_;
     MapScene* mapScene_;
