@@ -7,7 +7,7 @@ Edge::Edge()
     , source_(Node::INVALID_ID)
     , target_(Node::INVALID_ID)
     , length_(0.0)
-    , capacity_(10.0)  // Default capacity
+    , capacity_(10.0)  // 默认容量
     , carCount_(0)
 {}
 
@@ -16,7 +16,7 @@ Edge::Edge(Id id, Node::Id source, Node::Id target, double length)
     , source_(source)
     , target_(target)
     , length_(length)
-    , capacity_(10.0)  // Default capacity
+    , capacity_(10.0)  // 默认容量
     , carCount_(0)
 {}
 

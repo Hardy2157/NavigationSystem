@@ -70,7 +70,7 @@ void ControlPanel::setupUi() {
     endNodeSpinBox_->setValue(9999);
     pathForm->addRow("终止节点 ID:", endNodeSpinBox_);
 
-    // Routing criteria selection
+    // 路由策略选择
     routingCriteriaCombo_ = new QComboBox();
     routingCriteriaCombo_->addItem("最短距离 (F2)", static_cast<int>(RoutingCriteria::ShortestDistance));
     routingCriteriaCombo_->addItem("最快时间 (F4)", static_cast<int>(RoutingCriteria::FastestTime));
@@ -133,15 +133,15 @@ void ControlPanel::setupUi() {
     clearButton_->setStyleSheet("QPushButton { background-color: #ffcccc; }");
     mainLayout->addWidget(clearButton_);
 
-    // Add stretch to push everything to top
+    // 添加拉伸以将所有内容推到顶部
     mainLayout->addStretch();
 
     setWidget(mainWidget);
 
-    // Set minimum width
+    // 设置最小宽度
     setMinimumWidth(250);
 
-    // Connect signals
+    // 连接信号
     connect(findNearestButton_, &QPushButton::clicked, this, &ControlPanel::onFindNearestClicked);
     connect(computePathButton_, &QPushButton::clicked, this, &ControlPanel::onComputePathClicked);
     connect(showTrafficButton_, &QPushButton::clicked, this, &ControlPanel::onShowTrafficClicked);

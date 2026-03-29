@@ -11,32 +11,32 @@ namespace nav {
 
 class TrafficSimulator {
 public:
-    // Car agent that travels along a computed route
+    // 沿计算路线行驶的车辆代理
     struct Car {
-        Edge::Id currentEdge;       // Road this car is currently on
-        double remainingTime;       // Time left before exiting this road
-        std::vector<Edge::Id> route; // Planned route (sequence of edges)
-        size_t routeIndex;          // Current position in route
+        Edge::Id currentEdge;       // 此车当前所在的道路
+        double remainingTime;       // 离开此道路前的剩余时间
+        std::vector<Edge::Id> route; // 计划路线（边序列）
+        size_t routeIndex;          // 路线中的当前位置
     };
 
     TrafficSimulator(Graph& graph, PathFinder* pathfinder, unsigned int seed = 42);
 
-    // Perform one simulation step (advance all cars, spawn new ones)
+    // 执行一个仿真步骤（推进所有车辆，生成新车辆）
     void step();
 
-    // Get list of edges that changed in last step
+    // 获取上一步中更改的边列表
     const std::vector<Edge::Id>& getChangedEdges() const { return changedEdges_; }
 
-    // Get graph reference for visual updates
+    // 获取图引用以进行可视化更新
     Graph& getGraph() { return graph_; }
 
-    // Get number of active cars
+    // 获取活动车辆数
     size_t getActiveCarCount() const { return activeCars_.size(); }
 
-    // Reset all traffic to zero
+    // 将所有交通重置为零
     void reset();
 
-    // Configuration
+    // 配置
     void setSpawnRate(int carsPerStep) { spawnRate_ = carsPerStep; }
     void setMaxCars(int maxCars) { maxCars_ = maxCars; }
     void setTimeStep(double dt) { timeStep_ = dt; }
@@ -54,10 +54,10 @@ private:
     std::vector<Edge::Id> changedEdges_;
     std::vector<Node::Id> allNodeIds_;
 
-    // Simulation parameters
-    int spawnRate_ = 10;     // Cars to spawn per step
-    int maxCars_ = 1000;     // Maximum active cars
-    double timeStep_ = 1.0;  // Time units per step
+    // 仿真参数
+    int spawnRate_ = 10;     // 每步生成的车辆数
+    int maxCars_ = 1000;     // 最大活动车辆数
+    double timeStep_ = 1.0;  // 每步的时间单位
     int stepCount_ = 0;
 };
 

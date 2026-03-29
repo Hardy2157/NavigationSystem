@@ -9,7 +9,7 @@ TrafficSimulator::TrafficSimulator(Graph& graph, PathFinder* pathfinder, unsigne
     , pathfinder_(pathfinder)
     , rng_(seed)
 {
-    // Cache all node IDs for random origin/destination selection
+    // 缓存所有节点 ID 以进行随机起点/终点选择
     for (const auto& nodePair : graph_.getNodes()) {
         allNodeIds_.push_back(nodePair.first);
     }
@@ -19,10 +19,10 @@ void TrafficSimulator::step() {
     changedEdges_.clear();
     stepCount_++;
 
-    // Phase 1: Advance existing cars
+    // 阶段 1：推进现有车辆
     advanceCars();
 
-    // Phase 2: Spawn new cars
+    // 阶段 2：生成新车辆
     spawnCars();
 }
 
@@ -34,14 +34,14 @@ void TrafficSimulator::advanceCars() {
         car.remainingTime -= timeStep_;
 
         if (car.remainingTime <= 0.0) {
-            // Car finished traversing current edge
+            // 车辆完成当前边的遍历
             Edge* currentEdge = graph_.getEdge(car.currentEdge);
             if (currentEdge) {
                 currentEdge->decrementCarCount();
                 changedEdges_.push_back(car.currentEdge);
             }
 
-            // Move to next edge in route
+            // 移动到路线中的下一条边
             car.routeIndex++;
             if (car.routeIndex < car.route.size()) {
                 Edge::Id nextEdgeId = car.route[car.routeIndex];
@@ -53,11 +53,11 @@ void TrafficSimulator::advanceCars() {
                     changedEdges_.push_back(nextEdgeId);
                     surviving.push_back(car);
                 }
-                // If edge is invalid, car is removed (not added to surviving)
+                // 如果边无效，则移除车辆（不添加到 surviving）
             }
-            // If route is complete, car is removed (not added to surviving)
+            // 如果路线完成，则移除车辆（不添加到 surviving）
         } else {
-            // Car still traveling on current edge
+            // 车辆仍在当前边上行驶
             surviving.push_back(car);
         }
     }
@@ -70,7 +70,7 @@ void TrafficSimulator::spawnCars() {
         return;
     }
 
-    // Limit active cars
+    // 限制活动车辆数
     int toSpawn = spawnRate_;
     if (static_cast<int>(activeCars_.size()) + toSpawn > maxCars_) {
         toSpawn = maxCars_ - static_cast<int>(activeCars_.size());
@@ -82,22 +82,22 @@ void TrafficSimulator::spawnCars() {
     std::uniform_int_distribution<size_t> nodeDist(0, allNodeIds_.size() - 1);
 
     for (int i = 0; i < toSpawn; ++i) {
-        // Pick random origin and destination
+        // 选择随机起点和终点
         Node::Id origin = allNodeIds_[nodeDist(rng_)];
         Node::Id destination = allNodeIds_[nodeDist(rng_)];
 
-        // Skip if same node
+        // 如果是同一节点则跳过
         if (origin == destination) {
             continue;
         }
 
-        // Compute route
+        // 计算路线
         PathResult result = pathfinder_->findPath(graph_, origin, destination);
         if (!result.found || result.pathEdges.empty()) {
             continue;
         }
 
-        // Create car and place on first edge
+        // 创建车辆并放置在第一条边上
         Car car;
         car.route = result.pathEdges;
         car.routeIndex = 0;
@@ -123,7 +123,7 @@ double TrafficSimulator::computeTravelTime(const Edge* edge) const {
 }
 
 void TrafficSimulator::reset() {
-    // Remove all cars from edges
+    // 从边上移除所有车辆
     for (auto& car : activeCars_) {
         Edge* edge = graph_.getEdge(car.currentEdge);
         if (edge) {
@@ -134,7 +134,7 @@ void TrafficSimulator::reset() {
     changedEdges_.clear();
     stepCount_ = 0;
 
-    // Reset all edge car counts to zero
+    // 将所有边的车辆计数重置为零
     for (const auto& edgePair : graph_.getEdges()) {
         Edge* edge = graph_.getEdge(edgePair.first);
         if (edge) {

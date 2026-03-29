@@ -25,10 +25,10 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-    // Load and display a graph
+    // 加载并显示图
     void loadGraph(const Graph& graph);
 
-    // Generate a new random map
+    // 生成新的随机地图
     void generateNewMap(int numNodes = 10000, double width = 10000.0, double height = 10000.0);
 
 private slots:
@@ -41,7 +41,7 @@ private slots:
     void onPathFound(const PathResult& result);
     void onStatusMessage(const QString& message);
 
-    // Control panel slots
+    // 控制面板槽
     void onFindNearestRequested(double x, double y, int k);
     void onComputePathRequested(uint32_t startId, uint32_t endId, RoutingCriteria criteria);
     void onShowTrafficNearRequested(double x, double y, double radius);
@@ -70,7 +70,7 @@ private:
     QTimer* simulationTimer_;
     QAction* simulationAction_;
     bool simulationRunning_ = false;
-    bool heatmapVisible_ = false;  // Toggle for visual heatmap display
+    bool heatmapVisible_ = false;  // 可视化热力图显示的开关
 
     double mapWidth_ = 10000.0;
     double mapHeight_ = 10000.0;

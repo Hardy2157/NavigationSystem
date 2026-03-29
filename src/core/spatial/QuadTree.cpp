@@ -11,23 +11,23 @@ QuadTree::QuadTree(const BoundingBox& bounds)
 {}
 
 bool QuadTree::insert(Node::Id nodeId, const Point2D& position) {
-    // Check if point is within bounds
+    // 检查点是否在边界内
     if (!bounds_.contains(position)) {
         return false;
     }
 
-    // If we have capacity and haven't subdivided, add here
+    // 如果有容量且未细分，则在此处添加
     if (entries_.size() < MAX_CAPACITY && !divided_) {
         entries_.emplace_back(nodeId, position);
         return true;
     }
 
-    // Otherwise, subdivide if needed
+    // 否则，如果需要则细分
     if (!divided_) {
         subdivide();
     }
 
-    // Insert into appropriate child
+    // 插入到适当的子节点
     if (northWest_->insert(nodeId, position)) return true;
     if (northEast_->insert(nodeId, position)) return true;
     if (southWest_->insert(nodeId, position)) return true;
@@ -42,7 +42,7 @@ void QuadTree::subdivide() {
     southWest_ = std::make_unique<QuadTree>(bounds_.getSouthWest());
     southEast_ = std::make_unique<QuadTree>(bounds_.getSouthEast());
 
-    // Move existing entries to children
+    // 将现有条目移动到子节点
     for (const auto& entry : entries_) {
         northWest_->insert(entry.id, entry.position);
         northEast_->insert(entry.id, entry.position);
@@ -55,24 +55,24 @@ void QuadTree::subdivide() {
 }
 
 std::vector<Node::Id> QuadTree::findKNearest(const Point2D& query, size_t k) const {
-    // Max-heap of size k: top element is the farthest of the k nearest
+    // 大小为 k 的最大堆：顶部元素是 k 个最近元素中最远的
     std::priority_queue<DistanceEntry> maxHeap;
     findKNearestHelper(query, k, maxHeap);
 
-    // Extract results from heap (farthest first, then reverse)
+    // 从堆中提取结果（最远的优先，然后反转）
     std::vector<Node::Id> result;
     result.reserve(maxHeap.size());
     while (!maxHeap.empty()) {
         result.push_back(maxHeap.top().id);
         maxHeap.pop();
     }
-    std::reverse(result.begin(), result.end());  // Nearest first
+    std::reverse(result.begin(), result.end());  // 最近的优先
     return result;
 }
 
 void QuadTree::findKNearestHelper(const Point2D& query, size_t k,
                                   std::priority_queue<DistanceEntry>& maxHeap) const {
-    // Process entries in this node
+    // 处理此节点中的条目
     for (const auto& entry : entries_) {
         double dist = query.distanceTo(entry.position);
         if (maxHeap.size() < k) {
@@ -83,18 +83,18 @@ void QuadTree::findKNearestHelper(const Point2D& query, size_t k,
         }
     }
 
-    // If not divided, we're done
+    // 如果未细分，则完成
     if (!divided_) {
         return;
     }
 
-    // Calculate distances to each child's bounding box
+    // 计算到每个子节点边界框的距离
     struct ChildDistance {
         QuadTree* child;
         double distance;
 
         bool operator<(const ChildDistance& other) const {
-            return distance > other.distance; // Min heap
+            return distance > other.distance; // 最小堆
         }
     };
 
@@ -103,7 +103,7 @@ void QuadTree::findKNearestHelper(const Point2D& query, size_t k,
     auto addChild = [&](QuadTree* child) {
         if (!child) return;
 
-        // Calculate minimum distance from query point to child's bounding box
+        // 计算从查询点到子节点边界框的最小距离
         double dx = 0.0;
         double dy = 0.0;
 
@@ -128,12 +128,12 @@ void QuadTree::findKNearestHelper(const Point2D& query, size_t k,
     addChild(southWest_.get());
     addChild(southEast_.get());
 
-    // Visit children in order of distance, pruning with max-heap
+    // 按距离顺序访问子节点，使用最大堆进行剪枝
     while (!childQueue.empty()) {
         auto childDist = childQueue.top();
         childQueue.pop();
 
-        // Prune: if heap is full and child is farther than the worst candidate
+        // 剪枝：如果堆已满且子节点比最差候选者更远
         if (maxHeap.size() >= k && childDist.distance > maxHeap.top().distance) {
             continue;
         }
@@ -149,19 +149,19 @@ std::vector<Node::Id> QuadTree::queryRange(const BoundingBox& range) const {
 }
 
 void QuadTree::queryRangeHelper(const BoundingBox& range, std::vector<Node::Id>& result) const {
-    // Check if this node's bounds intersect with the query range
+    // 检查此节点的边界是否与查询范围相交
     if (!bounds_.intersects(range)) {
         return;
     }
 
-    // Add all entries that are within the range
+    // 添加范围内的所有条目
     for (const auto& entry : entries_) {
         if (range.contains(entry.position)) {
             result.push_back(entry.id);
         }
     }
 
-    // Recursively search children
+    // 递归搜索子节点
     if (divided_) {
         northWest_->queryRangeHelper(range, result);
         northEast_->queryRangeHelper(range, result);

@@ -5,13 +5,13 @@
 
 namespace nav {
 
-// Axis-Aligned Bounding Box (AABB)
+// 轴对齐包围盒 (AABB)
 class BoundingBox {
 public:
     BoundingBox();
     BoundingBox(double minX, double minY, double maxX, double maxY);
 
-    // Getters
+    // 获取器
     double getMinX() const { return minX_; }
     double getMinY() const { return minY_; }
     double getMaxX() const { return maxX_; }
@@ -20,11 +20,11 @@ public:
     double getHeight() const { return maxY_ - minY_; }
     Point2D getCenter() const { return Point2D((minX_ + maxX_) / 2.0, (minY_ + maxY_) / 2.0); }
 
-    // Spatial queries
+    // 空间查询
     bool contains(const Point2D& point) const;
     bool intersects(const BoundingBox& other) const;
 
-    // Quadrant subdivision (for QuadTree)
+    // 象限细分 (用于四叉树)
     BoundingBox getNorthWest() const;
     BoundingBox getNorthEast() const;
     BoundingBox getSouthWest() const;

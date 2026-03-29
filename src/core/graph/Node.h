@@ -6,7 +6,7 @@
 
 namespace nav {
 
-// 2D Point structure
+// 二维点结构
 struct Point2D {
     double x;
     double y;
@@ -14,14 +14,14 @@ struct Point2D {
     Point2D() : x(0.0), y(0.0) {}
     Point2D(double x_, double y_) : x(x_), y(y_) {}
 
-    // Calculate Euclidean distance to another point
+    // 计算到另一点的欧几里得距离
     double distanceTo(const Point2D& other) const {
         double dx = x - other.x;
         double dy = y - other.y;
         return std::sqrt(dx * dx + dy * dy);
     }
 
-    // Equality operators
+    // 相等运算符
     bool operator==(const Point2D& other) const {
         return x == other.x && y == other.y;
     }
@@ -31,7 +31,7 @@ struct Point2D {
     }
 };
 
-// Node class representing a location in the navigation graph
+// 节点类，表示导航图中的位置
 class Node {
 public:
     using Id = uint32_t;
@@ -40,11 +40,11 @@ public:
     Node();
     Node(Id id, const Point2D& position);
 
-    // Getters
+    // 获取器
     Id getId() const { return id_; }
     const Point2D& getPosition() const { return position_; }
 
-    // Setters
+    // 设置器
     void setPosition(const Point2D& position) { position_ = position; }
 
 private:

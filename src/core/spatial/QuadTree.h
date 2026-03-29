@@ -9,24 +9,24 @@
 
 namespace nav {
 
-// QuadTree for efficient spatial indexing of nodes
+// 用于节点高效空间索引的四叉树
 class QuadTree {
 public:
     static constexpr size_t MAX_CAPACITY = 4;
 
-    // Constructor
+    // 构造函数
     explicit QuadTree(const BoundingBox& bounds);
 
-    // Insert a node into the tree
+    // 将节点插入树中
     bool insert(Node::Id nodeId, const Point2D& position);
 
-    // Find k nearest neighbors to a query point
+    // 查找查询点的 k 个最近邻
     std::vector<Node::Id> findKNearest(const Point2D& query, size_t k) const;
 
-    // Query all nodes within a bounding box
+    // 查询包围盒内的所有节点
     std::vector<Node::Id> queryRange(const BoundingBox& range) const;
 
-    // Clear the tree
+    // 清空树
     void clear();
 
 private:
@@ -38,7 +38,7 @@ private:
             : id(nodeId), position(pos) {}
     };
 
-    // Helper struct for k-nearest search (max heap)
+    // k-最近邻搜索的辅助结构（最大堆）
     struct DistanceEntry {
         Node::Id id;
         double distance;
@@ -46,27 +46,27 @@ private:
         DistanceEntry(Node::Id nodeId, double dist)
             : id(nodeId), distance(dist) {}
 
-        // For max heap (priority_queue uses less by default, so we reverse)
+        // 用于最大堆（priority_queue 默认使用 less，所以我们反转）
         bool operator<(const DistanceEntry& other) const {
             return distance < other.distance;
         }
     };
 
-    // Subdivide this node into 4 children
+    // 将此节点细分为 4 个子节点
     void subdivide();
 
-    // Helper for k-nearest search using max-heap
+    // 使用最大堆的 k-最近邻搜索辅助函数
     void findKNearestHelper(const Point2D& query, size_t k,
                            std::priority_queue<DistanceEntry>& maxHeap) const;
 
-    // Helper for range query
+    // 范围查询辅助函数
     void queryRangeHelper(const BoundingBox& range, std::vector<Node::Id>& result) const;
 
     BoundingBox bounds_;
     std::vector<NodeEntry> entries_;
     bool divided_;
 
-    // Children (NW, NE, SW, SE)
+    // 子节点（西北、东北、西南、东南）
     std::unique_ptr<QuadTree> northWest_;
     std::unique_ptr<QuadTree> northEast_;
     std::unique_ptr<QuadTree> southWest_;

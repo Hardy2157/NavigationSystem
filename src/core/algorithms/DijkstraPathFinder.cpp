@@ -8,13 +8,13 @@ namespace nav {
 PathResult DijkstraPathFinder::findPath(const Graph& graph, Node::Id start, Node::Id end) {
     PathResult result;
 
-    // Verify start and end nodes exist
+    // 验证起点和终点节点是否存在
     if (graph.getNode(start) == nullptr || graph.getNode(end) == nullptr) {
         result.found = false;
         return result;
     }
 
-    // If start == end, return trivial path
+    // 如果起点 == 终点，返回平凡路径
     if (start == end) {
         result.pathNodes.push_back(start);
         result.totalCost = 0.0;
@@ -22,57 +22,57 @@ PathResult DijkstraPathFinder::findPath(const Graph& graph, Node::Id start, Node
         return result;
     }
 
-    // Distance map (lazy initialization - no need to set all to infinity)
+    // 距离映射（延迟初始化 - 无需将所有设置为无穷大）
     std::unordered_map<Node::Id, double> dist;
     dist.reserve(graph.getNodeCount());
     dist[start] = 0.0;
 
-    // Predecessor map: stores which edge led to this node
+    // 前驱映射：存储哪条边导致到达此节点
     std::unordered_map<Node::Id, Edge::Id> predecessor;
 
-    // Priority queue: (distance, nodeId)
-    // Note: std::priority_queue is a max heap, so we negate distances
+    // 优先队列：(距离, 节点ID)
+    // 注意：std::priority_queue 是最大堆，所以我们对距离取反
     using PQEntry = std::pair<double, Node::Id>;
     std::priority_queue<PQEntry, std::vector<PQEntry>, std::greater<PQEntry>> pq;
 
     pq.push({0.0, start});
 
-    // Visited set to avoid reprocessing
+    // 访问集合以避免重复处理
     std::unordered_map<Node::Id, bool> visited;
 
     while (!pq.empty()) {
         auto [currentDist, currentNode] = pq.top();
         pq.pop();
 
-        // Skip if already visited
+        // 如果已访问则跳过
         if (visited[currentNode]) {
             continue;
         }
         visited[currentNode] = true;
 
-        // Early termination: if we reached the end node, we're done
+        // 提前终止：如果到达终点节点，则完成
         if (currentNode == end) {
             break;
         }
 
-        // Explore neighbors
+        // 探索邻居
         const auto& adjacentEdges = graph.getAdjacentEdges(currentNode);
         for (Edge::Id edgeId : adjacentEdges) {
             const Edge* edge = graph.getEdge(edgeId);
             if (!edge) continue;
 
-            // Determine the neighbor node (other endpoint of the edge)
+            // 确定邻居节点（边的另一个端点）
             Node::Id neighbor = (edge->getSource() == currentNode) ? edge->getTarget() : edge->getSource();
 
-            // Skip if already visited
+            // 如果已访问则跳过
             if (visited[neighbor]) {
                 continue;
             }
 
-            // Calculate new distance
+            // 计算新距离
             double newDist = dist[currentNode] + edge->getLength();
 
-            // If this is a better path, update (missing entry = infinity)
+            // 如果这是更好的路径，则更新（缺失条目 = 无穷大）
             auto it = dist.find(neighbor);
             double currentBest = (it != dist.end()) ? it->second : std::numeric_limits<double>::infinity();
             if (newDist < currentBest) {
@@ -83,14 +83,14 @@ PathResult DijkstraPathFinder::findPath(const Graph& graph, Node::Id start, Node
         }
     }
 
-    // Check if path was found
+    // 检查是否找到路径
     auto endIt = dist.find(end);
     if (endIt == dist.end() || endIt->second == std::numeric_limits<double>::infinity()) {
         result.found = false;
         return result;
     }
 
-    // Reconstruct path
+    // 重建路径
     result.found = true;
     result.totalCost = endIt->second;
     reconstructPath(graph, start, end, predecessor, result);
@@ -103,7 +103,7 @@ void DijkstraPathFinder::reconstructPath(const Graph& graph,
                                          Node::Id end,
                                          const std::unordered_map<Node::Id, Edge::Id>& predecessor,
                                          PathResult& result) const {
-    // Reconstruct path by following predecessor edges backwards
+    // 通过向后跟随前驱边重建路径
     std::vector<Node::Id> reversePath;
     std::vector<Edge::Id> reverseEdges;
 
@@ -113,7 +113,7 @@ void DijkstraPathFinder::reconstructPath(const Graph& graph,
     while (current != start) {
         auto it = predecessor.find(current);
         if (it == predecessor.end()) {
-            // Path reconstruction failed (shouldn't happen if path exists)
+            // 路径重建失败（如果路径存在则不应发生）
             result.found = false;
             result.pathNodes.clear();
             result.pathEdges.clear();
@@ -131,12 +131,12 @@ void DijkstraPathFinder::reconstructPath(const Graph& graph,
 
         reverseEdges.push_back(edgeId);
 
-        // Move to the other endpoint of the edge
+        // 移动到边的另一个端点
         current = (edge->getSource() == current) ? edge->getTarget() : edge->getSource();
         reversePath.push_back(current);
     }
 
-    // Reverse to get path from start to end
+    // 反转以获得从起点到终点的路径
     result.pathNodes.assign(reversePath.rbegin(), reversePath.rend());
     result.pathEdges.assign(reverseEdges.rbegin(), reverseEdges.rend());
 }

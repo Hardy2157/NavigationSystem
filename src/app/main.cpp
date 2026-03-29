@@ -5,13 +5,13 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    std::cout << "=== Navigation System - Phase 6: Qt GUI ===" << std::endl;
+    
 
-    // Create and show main window
+    // 创建并显示主窗口
     nav::MainWindow mainWindow;
     mainWindow.show();
 
-    // Generate initial map
+    // 生成初始地图
     std::cout << "Generating initial map..." << std::endl;
     mainWindow.generateNewMap(10000, 10000.0, 10000.0);
 

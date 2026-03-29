@@ -7,9 +7,8 @@
 
 namespace nav {
 
-// Map generator using grid-based approach with random perturbation
-// Creates a planar, connected graph by placing nodes in a grid pattern
-// with random offsets, then connecting adjacent grid cells
+// 使用基于网格的方法和随机扰动的地图生成器
+// 通过在网格模式中放置节点并添加随机偏移，然后连接相邻网格单元来创建平面连通图
 class GridPerturbationGenerator : public MapGenerator {
 public:
     GridPerturbationGenerator();
@@ -17,16 +16,16 @@ public:
 
     void generate(Graph& graph, int numNodes, double width, double height) override;
 
-    // Configuration
+    // 配置
     void setPerturbationFactor(double factor) { perturbationFactor_ = factor; }
     void setAddDiagonals(bool addDiagonals) { addDiagonals_ = addDiagonals; }
     void setDiagonalProbability(double prob) { diagonalProbability_ = prob; }
 
 private:
     std::mt19937 rng_;
-    double perturbationFactor_;  // How much to perturb from grid center (0.0 to 0.5)
-    bool addDiagonals_;           // Whether to add diagonal connections
-    double diagonalProbability_;  // Probability of adding each diagonal edge
+    double perturbationFactor_;  // 从网格中心扰动的程度 (0.0 到 0.5)
+    bool addDiagonals_;           // 是否添加对角线连接
+    double diagonalProbability_;  // 添加每条对角线边的概率
 };
 
 } // namespace nav

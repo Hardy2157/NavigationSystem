@@ -6,8 +6,8 @@
 
 namespace nav {
 
-// Dynamic pathfinder that uses traffic-aware travel time as cost
-// Uses TrafficModel::calculateTravelTime() instead of raw edge length
+// 动态路径查找器，使用交通感知的行驶时间作为开销
+// 使用 TrafficModel::calculateTravelTime() 而不是原始边长度
 class DynamicPathFinder : public PathFinder {
 public:
     DynamicPathFinder() = default;

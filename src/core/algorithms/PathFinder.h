@@ -6,12 +6,12 @@
 
 namespace nav {
 
-// Result of a pathfinding query
+// 路径查找查询的结果
 struct PathResult {
-    std::vector<Node::Id> pathNodes;  // Sequence of nodes from start to end
-    std::vector<Edge::Id> pathEdges;  // Sequence of edges used (for highlighting)
-    double totalCost;                  // Total cost/distance of the path
-    bool found;                        // Whether a path was found
+    std::vector<Node::Id> pathNodes;  // 从起点到终点的节点序列
+    std::vector<Edge::Id> pathEdges;  // 使用的边序列（用于高亮显示）
+    double totalCost;                  // 路径的总开销/距离
+    bool found;                        // 是否找到路径
 
     PathResult()
         : totalCost(0.0)
@@ -19,12 +19,12 @@ struct PathResult {
     {}
 };
 
-// Abstract interface for pathfinding algorithms
+// 路径查找算法的抽象接口
 class PathFinder {
 public:
     virtual ~PathFinder() = default;
 
-    // Find a path from start to end node
+    // 查找从起点到终点的路径
     virtual PathResult findPath(const Graph& graph, Node::Id start, Node::Id end) = 0;
 };
 

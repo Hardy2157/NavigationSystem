@@ -14,7 +14,7 @@ Node::Id Graph::addNode(const Point2D& position) {
 
 Node::Id Graph::addNodeWithId(Node::Id id, const Point2D& position) {
     nodes_.emplace(id, Node(id, position));
-    adjacencyList_[id];  // default-construct empty vector
+    adjacencyList_[id];  // 默认构造空向量
     if (id >= nextNodeId_) {
         nextNodeId_ = id + 1;
     }
@@ -77,7 +77,7 @@ std::vector<Node::Id> Graph::getNeighbors(Node::Id nodeId) const {
     for (Edge::Id edgeId : adjacentEdges) {
         const Edge* edge = getEdge(edgeId);
         if (edge) {
-            // Add the other endpoint of the edge
+            // 添加边的另一个端点
             Node::Id neighbor = (edge->getSource() == nodeId) ? edge->getTarget() : edge->getSource();
             neighbors.push_back(neighbor);
         }
@@ -91,17 +91,17 @@ bool Graph::isConnected() const {
         return true;
     }
 
-    // Perform DFS from the first node
+    // 从第一个节点执行 DFS
     std::unordered_map<Node::Id, bool> visited;
     for (const auto& pair : nodes_) {
         visited[pair.first] = false;
     }
 
-    // Start DFS from first node
+    // 从第一个节点开始 DFS
     Node::Id startNode = nodes_.begin()->first;
     dfsVisit(startNode, visited);
 
-    // Check if all nodes were visited
+    // 检查是否所有节点都被访问
     for (const auto& pair : visited) {
         if (!pair.second) {
             return false;

@@ -12,8 +12,8 @@ public:
 
     Edge::Id getEdgeId() const { return edgeId_; }
 
-    // Update visual style based on congestion status
-    // status: 0 = Green (free), 1 = Yellow (moderate), 2 = Red (congested)
+    // 根据拥堵状态更新视觉样式
+    // status: 0 = 绿色（畅通）, 1 = 黄色（中等）, 2 = 红色（拥堵）
     void updateStyle(int congestionStatus);
 
 private:

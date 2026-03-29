@@ -16,7 +16,7 @@ bool BoundingBox::contains(const Point2D& point) const {
 }
 
 bool BoundingBox::intersects(const BoundingBox& other) const {
-    // Two AABBs intersect if they overlap on both axes
+    // 如果两个 AABB 在两个轴上都重叠，则它们相交
     return !(other.minX_ > maxX_ || other.maxX_ < minX_ ||
              other.minY_ > maxY_ || other.maxY_ < minY_);
 }

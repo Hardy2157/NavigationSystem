@@ -36,10 +36,10 @@ MainWindow::MainWindow(QWidget* parent)
     setupToolBar();
     setupControlPanel();
 
-    // Setup simulation timer
+    // 设置仿真定时器
     connect(simulationTimer_, &QTimer::timeout, this, &MainWindow::onSimulationStep);
 
-    // Connect scene signals
+    // 连接场景信号
     connect(mapScene_, &MapScene::pathFound, this, &MainWindow::onPathFound);
     connect(mapScene_, &MapScene::statusMessage, this, &MainWindow::onStatusMessage);
     connect(mapScene_, &MapScene::errorOccurred, this, [this](const QString& title, const QString& msg) {
@@ -47,11 +47,11 @@ MainWindow::MainWindow(QWidget* parent)
         statusBar()->showMessage(msg);
     });
 
-    // Set window properties
+    // 设置窗口属性
     setWindowTitle("导航系统");
     resize(1400, 900);
 
-    // Show status
+    // 显示状态
     statusBar()->showMessage("就绪。使用\"生成地图\"创建新地图，点击节点或使用控制面板。");
 }
 
@@ -60,17 +60,17 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::setupUi() {
-    // Create scene and view
+    // 创建场景和视图
     mapScene_ = new MapScene(this);
     mapView_ = new MapView(this);
     mapView_->setScene(mapScene_);
 
-    // Set as central widget
+    // 设置为中心部件
     setCentralWidget(mapView_);
 }
 
 void MainWindow::setupMenuBar() {
-    // File menu
+    // 文件菜单
     QMenu* fileMenu = menuBar()->addMenu("文件(&F)");
 
     QAction* generateAction = fileMenu->addAction("生成新地图(&G)");
@@ -91,14 +91,14 @@ void MainWindow::setupMenuBar() {
     exitAction->setShortcut(QKeySequence::Quit);
     connect(exitAction, &QAction::triggered, this, &QMainWindow::close);
 
-    // View menu
+    // 视图菜单
     QMenu* viewMenu = menuBar()->addMenu("视图(&V)");
 
     QAction* zoomFitAction = viewMenu->addAction("适应窗口(&F)");
     zoomFitAction->setShortcut(QKeySequence("Ctrl+0"));
     connect(zoomFitAction, &QAction::triggered, this, &MainWindow::onZoomToFit);
 
-    // Simulation menu
+    // 仿真菜单
     QMenu* simMenu = menuBar()->addMenu("仿真(&S)");
 
     simulationAction_ = simMenu->addAction("显示交通热力图(&T)");
@@ -125,7 +125,7 @@ void MainWindow::setupToolBar() {
 
     toolbar->addSeparator();
 
-    // Add heatmap toggle to toolbar
+    // 添加热力图切换到工具栏
     QAction* simAction = toolbar->addAction("显示/隐藏热力图");
     simAction->setCheckable(true);
     connect(simAction, &QAction::triggered, this, &MainWindow::onToggleSimulation);
@@ -137,7 +137,7 @@ void MainWindow::setupControlPanel() {
     controlPanel_ = new ControlPanel(this);
     addDockWidget(Qt::RightDockWidgetArea, controlPanel_);
 
-    // Connect control panel signals
+    // 连接控制面板信号
     connect(controlPanel_, &ControlPanel::findNearestRequested,
             this, &MainWindow::onFindNearestRequested);
     connect(controlPanel_, &ControlPanel::computePathRequested,
@@ -155,7 +155,7 @@ void MainWindow::loadGraph(const Graph& graph) {
     rebuildQuadTree();
     mapView_->zoomToFit();
 
-    // Update control panel ranges
+    // 更新控制面板范围
     if (graph.getNodeCount() > 0) {
         controlPanel_->setNodeIdRange(0, static_cast<int>(graph.getNodeCount()) - 1);
         controlPanel_->setCoordinateRange(0.0, mapWidth_, 0.0, mapHeight_);
@@ -167,7 +167,7 @@ void MainWindow::loadGraph(const Graph& graph) {
 }
 
 void MainWindow::generateNewMap(int numNodes, double width, double height) {
-    // Stop simulation timer temporarily
+    // 暂时停止仿真定时器
     simulationTimer_->stop();
 
     mapWidth_ = width;
@@ -175,7 +175,7 @@ void MainWindow::generateNewMap(int numNodes, double width, double height) {
 
     statusBar()->showMessage("正在生成地图...");
 
-    // Clear and regenerate
+    // 清除并重新生成
     graph_ = std::make_unique<Graph>();
     generator_->generate(*graph_, numNodes, width, height);
 
@@ -188,7 +188,7 @@ void MainWindow::generateNewMap(int numNodes, double width, double height) {
 void MainWindow::startSimulation() {
     simulator_ = std::make_unique<TrafficSimulator>(*graph_, dijkstraPathfinder_.get());
 
-    // Scale traffic load to graph size
+    // 根据图大小缩放交通负载
     static constexpr int kEdgesPerSpawn = 500;
     static constexpr int kMinSpawnRate  = 20;
     static constexpr int kMaxSpawnRate  = 40;
@@ -200,7 +200,7 @@ void MainWindow::startSimulation() {
     simulator_->setSpawnRate(std::clamp(edgeCount / kEdgesPerSpawn, kMinSpawnRate, kMaxSpawnRate));
     simulator_->setMaxCars(std::clamp(edgeCount / kEdgeToCarDiv, kMinMaxCars, kMaxMaxCars));
 
-    // Set simulation running BEFORE loadGraph so updatePathfinder() picks DynamicPathFinder
+    // 在 loadGraph 之前设置仿真运行，以便 updatePathfinder() 选择 DynamicPathFinder
     simulationRunning_ = true;
 
     loadGraph(*graph_);
@@ -228,7 +228,7 @@ void MainWindow::rebuildQuadTree() {
 }
 
 void MainWindow::updatePathfinder() {
-    // Use dynamic pathfinder when simulation is running, otherwise use Dijkstra
+    // 仿真运行时使用动态路径查找器，否则使用 Dijkstra
     if (simulationRunning_) {
         mapScene_->setPathFinder(dynamicPathfinder_.get());
     } else {
@@ -251,7 +251,7 @@ void MainWindow::onZoomToFit() {
 }
 
 void MainWindow::onToggleSimulation() {
-    // Toggle heatmap visibility (simulation always runs in background)
+    // 切换热力图可见性（仿真始终在后台运行）
     heatmapVisible_ = !heatmapVisible_;
     mapScene_->setHeatmapVisible(heatmapVisible_);
 
@@ -260,7 +260,7 @@ void MainWindow::onToggleSimulation() {
         statusBar()->showMessage("交通热力图已显示。颜色表示拥堵程度。");
         std::cout << "Traffic heatmap enabled" << std::endl;
 
-        // Immediately update all edge colors to show current traffic state
+        // 立即更新所有边颜色以显示当前交通状态
         if (simulator_ && graph_) {
             for (const auto& edgePair : graph_->getEdges()) {
                 const Edge& edge = edgePair.second;
@@ -276,7 +276,7 @@ void MainWindow::onToggleSimulation() {
         statusBar()->showMessage("交通热力图已隐藏。道路显示默认绿色。");
         std::cout << "Traffic heatmap disabled" << std::endl;
 
-        // Reset all edges to default green color
+        // 将所有边重置为默认绿色
         if (graph_) {
             for (const auto& edgePair : graph_->getEdges()) {
                 mapScene_->updateEdgeCongestion(edgePair.first, 0);  // 0 = green
@@ -289,10 +289,10 @@ void MainWindow::onToggleSimulation() {
 
 void MainWindow::onSimulationStep() {
     if (simulator_ && graph_) {
-        // Always run the simulation step (traffic data updates in background)
+        // 始终运行仿真步骤（交通数据在后台更新）
         simulator_->step();
 
-        // Only update visuals if heatmap is visible
+        // 仅在热力图可见时更新视觉效果
         if (heatmapVisible_) {
             for (Edge::Id edgeId : simulator_->getChangedEdges()) {
                 const Edge* edge = graph_->getEdge(edgeId);
@@ -306,7 +306,7 @@ void MainWindow::onSimulationStep() {
             }
         }
 
-        // Update localized traffic view if active
+        // 如果活动则更新局部交通视图
         if (!mapScene_->getTrafficHighlightedEdges().empty()) {
             mapScene_->updateTrafficHighlights(*graph_);
         }
@@ -334,17 +334,17 @@ void MainWindow::onFindNearestRequested(double x, double y, int k) {
 
     std::cout << "Finding " << k << " nearest nodes to (" << x << ", " << y << ")" << std::endl;
 
-    // Show query point on map
+    // 在地图上显示查询点
     mapScene_->showQueryPoint(x, y);
 
-    // Find k nearest nodes
+    // 查找 k 个最近节点
     Point2D queryPoint(x, y);
     std::vector<Node::Id> nearestNodes = quadTree_->findKNearest(queryPoint, static_cast<size_t>(k));
 
-    // Highlight the found nodes (Cyan color)
-    mapScene_->highlightNodes(nearestNodes, QColor(0, 188, 212));  // Cyan
+    // 高亮显示找到的节点（青色）
+    mapScene_->highlightNodes(nearestNodes, QColor(0, 188, 212));  // 青色
 
-    // Collect all edges associated with the found nodes
+    // 收集与找到的节点关联的所有边
     std::unordered_set<Edge::Id> associatedEdgeSet;
     for (Node::Id nodeId : nearestNodes) {
         const auto& edges = graph_->getAdjacentEdges(nodeId);
@@ -356,15 +356,15 @@ void MainWindow::onFindNearestRequested(double x, double y, int k) {
         }
     }
 
-    // Highlight associated edges
+    // 高亮显示关联的边
     std::vector<Edge::Id> associatedEdges(associatedEdgeSet.begin(), associatedEdgeSet.end());
-    mapScene_->highlightEdges(associatedEdges, QColor(0, 188, 212));  // Cyan
+    mapScene_->highlightEdges(associatedEdges, QColor(0, 188, 212));  // 青色
 
     int edgeCount = static_cast<int>(associatedEdges.size());
 
     std::cout << "Found " << nearestNodes.size() << " nodes with " << edgeCount << " connected edges" << std::endl;
 
-    // Auto-focus on the query point
+    // 自动聚焦到查询点
     mapView_->focusOnPoint(x, y, 2.0);
 
     controlPanel_->showSpatialQueryResult(static_cast<int>(nearestNodes.size()), edgeCount);
@@ -381,7 +381,7 @@ void MainWindow::onComputePathRequested(uint32_t startId, uint32_t endId, Routin
         return;
     }
 
-    // Validate node IDs
+    // 验证节点 ID
     if (!graph_->getNode(startId)) {
         controlPanel_->showPathResult(0, 0.0, false);
         QMessageBox::warning(this, "计算失败",
@@ -400,10 +400,10 @@ void MainWindow::onComputePathRequested(uint32_t startId, uint32_t endId, Routin
     std::cout << "Computing path from Node " << startId << " to Node " << endId;
     std::cout << " using " << (criteria == RoutingCriteria::ShortestDistance ? "Shortest Distance (F2)" : "Fastest Time (F4)") << std::endl;
 
-    // Clear spatial highlights before showing path
+    // 在显示路径之前清除空间高亮
     mapScene_->clearSpatialHighlights();
 
-    // Select pathfinder based on routing criteria (decoupled from simulation state)
+    // 根据路由策略选择路径查找器（与仿真状态解耦）
     PathFinder* selectedPathfinder = nullptr;
     if (criteria == RoutingCriteria::ShortestDistance) {
         selectedPathfinder = dijkstraPathfinder_.get();
@@ -411,15 +411,15 @@ void MainWindow::onComputePathRequested(uint32_t startId, uint32_t endId, Routin
         selectedPathfinder = dynamicPathfinder_.get();
     }
 
-    // Temporarily set the pathfinder for this query
+    // 临时设置此查询的路径查找器
     mapScene_->setPathFinder(selectedPathfinder);
 
-    // Use MapScene's findPathById which handles visualization
+    // 使用 MapScene 的 findPathById 处理可视化
     PathResult result = mapScene_->findPathById(startId, endId);
 
-    // Auto-focus on the path bounds
+    // 自动聚焦到路径边界
     if (result.found && result.pathNodes.size() >= 2) {
-        // Calculate bounding rect of the path
+        // 计算路径的边界矩形
         double minX = std::numeric_limits<double>::max();
         double minY = std::numeric_limits<double>::max();
         double maxX = std::numeric_limits<double>::lowest();
@@ -454,14 +454,14 @@ void MainWindow::onShowTrafficNearRequested(double x, double y, double radius) {
 
     std::cout << "Showing traffic near (" << x << ", " << y << ") radius " << radius << std::endl;
 
-    // Clear previous traffic highlights
+    // 清除之前的交通高亮
     mapScene_->clearTrafficHighlights();
 
-    // Find all nodes within radius using QuadTree range query
+    // 使用四叉树范围查询查找半径内的所有节点
     BoundingBox queryBox(x - radius, y - radius, x + radius, y + radius);
     std::vector<Node::Id> nearbyNodes = quadTree_->queryRange(queryBox);
 
-    // Collect all edges adjacent to nearby nodes (roads near the coordinate)
+    // 收集邻近节点的所有相邻边（坐标附近的道路）
     std::unordered_set<Edge::Id> nearbyEdgeSet;
     for (Node::Id nodeId : nearbyNodes) {
         const auto& edges = graph_->getAdjacentEdges(nodeId);
@@ -475,13 +475,13 @@ void MainWindow::onShowTrafficNearRequested(double x, double y, double radius) {
 
     std::vector<Edge::Id> nearbyEdges(nearbyEdgeSet.begin(), nearbyEdgeSet.end());
 
-    // Show traffic colors on those edges
+    // 在这些边上显示交通颜色
     mapScene_->showTrafficEdges(nearbyEdges, *graph_);
 
-    // Show traffic query point marker
+    // 显示交通查询点标记
     mapScene_->showTrafficPoint(x, y);
 
-    // Auto-focus on the area
+    // 自动聚焦到该区域
     QRectF viewBounds(x - radius, y - radius, radius * 2, radius * 2);
     mapView_->focusOnBounds(viewBounds, 50.0);
 
@@ -547,7 +547,7 @@ void MainWindow::onLoadMap() {
         return;
     }
 
-    // Stop existing simulation
+    // 停止现有仿真
     simulationTimer_->stop();
 
     mapWidth_ = fileData.width;

@@ -14,14 +14,14 @@ struct MapFileData {
 
 class GraphIO {
 public:
-    // Save graph to file. Returns true on success.
+    // 将图保存到文件。成功时返回 true。
     static bool save(const std::string& filepath, const Graph& graph,
                      double mapWidth, double mapHeight);
 
-    // Load graph from file. Returns true on success, populates outData.
+    // 从文件加载图。成功时返回 true，填充 outData。
     static bool load(const std::string& filepath, MapFileData& outData);
 
-    // Get last error message (for UI display)
+    // 获取最后的错误消息（用于 UI 显示）
     static const std::string& getLastError();
 
 private:

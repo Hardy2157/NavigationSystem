@@ -27,7 +27,7 @@ int edgeDisplayStatus(const Edge& edge, bool heatmapVisible) {
 MapScene::MapScene(QObject* parent)
     : QGraphicsScene(parent)
 {
-    // Set a light gray background
+    // 设置浅灰色背景
     setBackgroundBrush(QBrush(QColor(245, 245, 245)));
 }
 
@@ -35,10 +35,10 @@ void MapScene::loadMap(const Graph& graph) {
     // Clear existing items
     clearMap();
 
-    // Disable indexing during bulk insertion for performance
+    // 禁用批量插入期间的索引以提高性能
     setItemIndexMethod(NoIndex);
 
-    // Add edges first (so they appear below nodes)
+    // 首先添加边（使其显示在节点下方）
     for (const auto& edgePair : graph.getEdges()) {
         const Edge& edge = edgePair.second;
 
@@ -56,7 +56,7 @@ void MapScene::loadMap(const Graph& graph) {
         }
     }
 
-    // Add nodes
+    // 添加节点
     for (const auto& nodePair : graph.getNodes()) {
         const Node& node = nodePair.second;
 
@@ -65,10 +65,10 @@ void MapScene::loadMap(const Graph& graph) {
         nodeItems_[node.getId()] = item;
     }
 
-    // Re-enable BSP tree indexing for efficient queries
+    // 重新启用 BSP 树索引以进行高效查询
     setItemIndexMethod(BspTreeIndex);
 
-    // Set scene rect to fit all items with some padding
+    // 设置场景矩形以适应所有项目并留出一些填充
     QRectF bounds = itemsBoundingRect();
     double padding = 100.0;
     setSceneRect(bounds.adjusted(-padding, -padding, padding, padding));
@@ -114,21 +114,21 @@ void MapScene::updateEdgeCongestion(Edge::Id id, int congestionStatus) {
 void MapScene::clearPathSelection() {
     clearPath();
 
-    // Reset node colors and highlight state
+    // 重置节点颜色和高亮状态
     if (startNode_ != Node::INVALID_ID) {
         NodeItem* item = getNodeItem(startNode_);
         if (item) {
-            item->setBrush(QBrush(QColor(60, 60, 60)));  // Original dark gray
+            item->setBrush(QBrush(QColor(60, 60, 60)));  // 原始深灰色
             item->setPen(Qt::NoPen);
-            item->setHighlighted(false);  // Reset to small size
+            item->setHighlighted(false);  // 重置为小尺寸
         }
     }
     if (endNode_ != Node::INVALID_ID) {
         NodeItem* item = getNodeItem(endNode_);
         if (item) {
-            item->setBrush(QBrush(QColor(60, 60, 60)));  // Original dark gray
+            item->setBrush(QBrush(QColor(60, 60, 60)));  // 原始深灰色
             item->setPen(Qt::NoPen);
-            item->setHighlighted(false);  // Reset to small size
+            item->setHighlighted(false);  // 重置为小尺寸
         }
     }
 
@@ -143,7 +143,7 @@ void MapScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
         return;
     }
 
-    // Find clicked node
+    // 查找点击的节点
     QList<QGraphicsItem*> clickedItems = items(event->scenePos());
     NodeItem* clickedNode = nullptr;
 
@@ -160,23 +160,23 @@ void MapScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
     Node::Id clickedId = clickedNode->getNodeId();
 
     switch (clickState_) {
-        case 0:  // First click: set start node
+        case 0:  // 第一次点击：设置起点
             clearPathSelection();
             startNode_ = clickedId;
-            highlightNode(startNode_, QColor(33, 150, 243));  // Blue
+            highlightNode(startNode_, QColor(33, 150, 243));  // 蓝色
             clickState_ = 1;
             emit statusMessage(QString("起点: 节点 %1。请点击另一个节点作为终点。").arg(startNode_));
             break;
 
-        case 1:  // Second click: set end node and find path
+        case 1:  // 第二次点击：设置终点并查找路径
             if (clickedId == startNode_) {
-                // Clicked same node, ignore
+                // 点击了相同节点，忽略
                 break;
             }
             endNode_ = clickedId;
-            highlightNode(endNode_, QColor(156, 39, 176));  // Purple
+            highlightNode(endNode_, QColor(156, 39, 176));  // 紫色
 
-            // Find path
+            // 查找路径
             if (graph_ && pathfinder_) {
                 PathResult result = pathfinder_->findPath(*graph_, startNode_, endNode_);
                 if (result.found) {
@@ -194,10 +194,10 @@ void MapScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
             clickState_ = 2;
             break;
 
-        case 2:  // Third click: clear and start over
+        case 2:  // 第三次点击：清除并重新开始
             clearPathSelection();
             startNode_ = clickedId;
-            highlightNode(startNode_, QColor(33, 150, 243));  // Blue
+            highlightNode(startNode_, QColor(33, 150, 243));  // 蓝色
             clickState_ = 1;
             emit statusMessage(QString("起点: 节点 %1。请点击另一个节点作为终点。").arg(startNode_));
             break;
@@ -210,9 +210,9 @@ void MapScene::highlightNode(Node::Id id, const QColor& color) {
     NodeItem* item = getNodeItem(id);
     if (item) {
         item->setBrush(QBrush(color));
-        item->setPen(QPen(color.darker(130), 2));  // Add border
-        item->setHighlighted(true);  // Make visually larger (16px diameter)
-        item->setZValue(12.0);  // Bring to front
+        item->setPen(QPen(color.darker(130), 2));  // 添加边框
+        item->setHighlighted(true);  // 使其在视觉上更大（16px 直径）
+        item->setZValue(12.0);  // 置于前面
     }
 }
 
@@ -221,7 +221,7 @@ void MapScene::showPath(const PathResult& result) {
 
     if (!graph_ || result.pathNodes.size() < 2) return;
 
-    // Create path
+    // 创建路径
     QPainterPath path;
 
     const Node* firstNode = graph_->getNode(result.pathNodes[0]);
@@ -236,14 +236,14 @@ void MapScene::showPath(const PathResult& result) {
         }
     }
 
-    // Create path item
+    // 创建路径项
     pathItem_ = new QGraphicsPathItem(path);
-    QPen pen(QColor(33, 150, 243, 220));  // Semi-transparent blue
-    pen.setWidthF(6.0);  // Thicker path for visibility
+    QPen pen(QColor(33, 150, 243, 220));  // 半透明蓝色
+    pen.setWidthF(6.0);  // 更粗的路径以提高可见性
     pen.setCapStyle(Qt::RoundCap);
     pen.setJoinStyle(Qt::RoundJoin);
     pathItem_->setPen(pen);
-    pathItem_->setZValue(5.0);  // Above edges, below highlighted nodes
+    pathItem_->setZValue(5.0);  // 在边之上，在高亮节点之下
 
     addItem(pathItem_);
 }
@@ -266,9 +266,9 @@ void MapScene::highlightNodes(const std::vector<Node::Id>& nodeIds, const QColor
         NodeItem* item = getNodeItem(id);
         if (item) {
             item->setBrush(QBrush(color));
-            item->setPen(QPen(color.darker(120), 2));  // Add border for visibility
-            item->setHighlighted(true);  // Make visually larger (16px diameter)
-            item->setZValue(8.0);  // Above normal nodes
+            item->setPen(QPen(color.darker(120), 2));  // 添加边框以提高可见性
+            item->setHighlighted(true);  // 使其在视觉上更大（16px 直径）
+            item->setZValue(8.0);  // 在普通节点之上
         }
     }
 }
@@ -284,29 +284,29 @@ void MapScene::highlightEdges(const std::vector<Edge::Id>& edgeIds, const QColor
         EdgeItem* item = getEdgeItem(id);
         if (item) {
             item->setPen(pen);
-            item->setZValue(2.0);  // Above normal edges
+            item->setZValue(2.0);  // 在普通边之上
         }
     }
 }
 
 void MapScene::clearSpatialHighlights() {
-    // Reset previously highlighted nodes to default
+    // 将之前高亮的节点重置为默认状态
     for (Node::Id id : highlightedNodes_) {
         NodeItem* item = getNodeItem(id);
         if (item) {
-            item->setBrush(QBrush(QColor(60, 60, 60)));  // Original dark gray
-            item->setPen(Qt::NoPen);  // Remove border
-            item->setHighlighted(false);  // Reset to small size
-            item->setZValue(10.0);  // Original Z
+            item->setBrush(QBrush(QColor(60, 60, 60)));  // 原始深灰色
+            item->setPen(Qt::NoPen);  // 移除边框
+            item->setHighlighted(false);  // 重置为小尺寸
+            item->setZValue(10.0);  // 原始 Z 值
         }
     }
     highlightedNodes_.clear();
 
-    // Restore previously highlighted edges to correct state
+    // 将之前高亮的边恢复到正确状态
     for (Edge::Id id : highlightedEdges_) {
         EdgeItem* item = getEdgeItem(id);
         if (item) {
-            int status = 0;  // Default green when heatmap is off
+            int status = 0;  // 热力图关闭时默认为绿色
             if (heatmapVisible_ && graph_) {
                 const Edge* edge = graph_->getEdge(id);
                 if (edge) {
@@ -319,7 +319,7 @@ void MapScene::clearSpatialHighlights() {
     }
     highlightedEdges_.clear();
 
-    // Remove query point marker
+    // 移除查询点标记
     if (queryPointMarker_) {
         removeItem(queryPointMarker_);
         delete queryPointMarker_;
@@ -336,18 +336,18 @@ PathResult MapScene::findPathById(Node::Id startId, Node::Id endId) {
         return result;
     }
 
-    // Clear previous path selection
+    // 清除之前的路径选择
     clearPathSelection();
 
-    // Set start and end nodes
+    // 设置起点和终点节点
     startNode_ = startId;
     endNode_ = endId;
 
-    // Highlight start and end nodes
-    highlightNode(startNode_, QColor(33, 150, 243));  // Blue
-    highlightNode(endNode_, QColor(156, 39, 176));    // Purple
+    // 高亮显示起点和终点节点
+    highlightNode(startNode_, QColor(33, 150, 243));  // 蓝色
+    highlightNode(endNode_, QColor(156, 39, 176));    // 紫色
 
-    // Find path
+    // 查找路径
     result = pathfinder_->findPath(*graph_, startNode_, endNode_);
 
     if (result.found) {
@@ -361,7 +361,7 @@ PathResult MapScene::findPathById(Node::Id startId, Node::Id endId) {
                                .arg(startId).arg(endId));
     }
 
-    clickState_ = 2;  // Path shown state
+    clickState_ = 2;  // 路径已显示状态
     return result;
 }
 
@@ -402,11 +402,11 @@ void MapScene::showTrafficEdges(const std::vector<Edge::Id>& edgeIds, const Grap
 }
 
 void MapScene::clearTrafficHighlights() {
-    // Restore edges to correct state based on heatmap visibility
+    // 根据热力图可见性将边恢复到正确状态
     for (Edge::Id id : trafficHighlightedEdges_) {
         EdgeItem* item = getEdgeItem(id);
         if (item) {
-            int status = 0;  // Default green when heatmap is off
+            int status = 0;  // 热力图关闭时默认为绿色
             if (heatmapVisible_ && graph_) {
                 const Edge* edge = graph_->getEdge(id);
                 if (edge) {

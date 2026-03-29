@@ -12,30 +12,30 @@ class MapView : public QGraphicsView {
 public:
     explicit MapView(QWidget* parent = nullptr);
 
-    // Zoom to fit all content
+    // 缩放以适应所有内容
     void zoomToFit();
 
-    // Update LOD visibility based on current zoom
+    // 根据当前缩放更新 LOD 可见性
     void updateLOD();
 
-    // Get current zoom level
+    // 获取当前缩放级别
     double getCurrentZoom() const { return currentZoom_; }
 
-    // Focus on a specific point with a reasonable zoom level
+    // 聚焦到特定点并使用合理的缩放级别
     void focusOnPoint(double x, double y, double zoomLevel = 2.0);
 
-    // Focus on a bounding rectangle with padding
+    // 聚焦到带填充的边界矩形
     void focusOnBounds(const QRectF& bounds, double padding = 50.0);
 
 protected:
-    // Override wheel event for zoom centered on cursor
+    // 重写滚轮事件以在光标处居中缩放
     void wheelEvent(QWheelEvent* event) override;
 
 private:
     static constexpr double ZOOM_FACTOR = 1.15;
     static constexpr double MIN_ZOOM = 0.01;
     static constexpr double MAX_ZOOM = 100.0;
-    static constexpr double LOD_THRESHOLD = 0.5;  // Hide nodes below this zoom level
+    static constexpr double LOD_THRESHOLD = 0.5;  // 在此缩放级别以下隐藏节点
 
     double currentZoom_ = 1.0;
 };

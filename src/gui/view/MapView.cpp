@@ -9,23 +9,23 @@ namespace nav {
 MapView::MapView(QWidget* parent)
     : QGraphicsView(parent)
 {
-    // Enable panning with mouse drag
+    // 启用鼠标拖动平移
     setDragMode(ScrollHandDrag);
 
-    // Enable antialiasing for smoother rendering
+    // 启用抗锯齿以实现更平滑的渲染
     setRenderHint(QPainter::Antialiasing);
     setRenderHint(QPainter::SmoothPixmapTransform);
 
-    // Optimize rendering
+    // 优化渲染
     setViewportUpdateMode(SmartViewportUpdate);
     setOptimizationFlag(DontSavePainterState);
     setOptimizationFlag(DontAdjustForAntialiasing);
 
-    // Set anchor for transformations
+    // 设置变换锚点
     setTransformationAnchor(AnchorUnderMouse);
     setResizeAnchor(AnchorUnderMouse);
 
-    // Allow scrolling beyond scene bounds slightly
+    // 允许稍微滚动超出场景边界
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
@@ -33,7 +33,7 @@ MapView::MapView(QWidget* parent)
 void MapView::zoomToFit() {
     if (scene()) {
         fitInView(scene()->sceneRect(), Qt::KeepAspectRatio);
-        currentZoom_ = transform().m11();  // Get current scale factor
+        currentZoom_ = transform().m11();  // 获取当前缩放因子
         updateLOD();
     }
 }
@@ -44,13 +44,13 @@ void MapView::updateLOD() {
     MapScene* mapScene = qobject_cast<MapScene*>(scene());
     if (!mapScene) return;
 
-    // Get current scale from transformation matrix
+    // 从变换矩阵获取当前缩放比例
     double scale = transform().m11();
 
-    // Show/hide nodes based on zoom level
+    // 根据缩放级别显示/隐藏节点
     bool showNodes = (scale >= LOD_THRESHOLD);
 
-    // Use the pre-built node map instead of iterating all scene items
+    // 使用预构建的节点映射而不是迭代所有场景项
     for (const auto& pair : mapScene->getNodeItems()) {
         if (pair.second) {
             pair.second->setVisible(showNodes);
@@ -70,38 +70,38 @@ void MapView::wheelEvent(QWheelEvent* event) {
         return;
     }
 
-    // Apply zoom centered on cursor position
+    // 应用以光标位置为中心的缩放
     scale(factor, factor);
     currentZoom_ = newZoom;
 
-    // Update LOD after zooming
+    // 缩放后更新 LOD
     updateLOD();
 }
 
 void MapView::focusOnPoint(double x, double y, double zoomLevel) {
-    // Reset transform and set desired zoom level
+    // 重置变换并设置所需的缩放级别
     resetTransform();
     scale(zoomLevel, zoomLevel);
     currentZoom_ = zoomLevel;
 
-    // Center on the point
+    // 居中到该点
     centerOn(x, y);
 
-    // Update LOD
+    // 更新 LOD
     updateLOD();
 }
 
 void MapView::focusOnBounds(const QRectF& bounds, double padding) {
     if (bounds.isEmpty()) return;
 
-    // Add padding to bounds
+    // 为边界添加填充
     QRectF paddedBounds = bounds.adjusted(-padding, -padding, padding, padding);
 
-    // Fit the view to the padded bounds
+    // 使视图适应填充后的边界
     fitInView(paddedBounds, Qt::KeepAspectRatio);
     currentZoom_ = transform().m11();
 
-    // Update LOD
+    // 更新 LOD
     updateLOD();
 }
 

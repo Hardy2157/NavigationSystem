@@ -3,29 +3,29 @@
 
 namespace nav {
 
-// Stateless utility class for traffic calculations
-// Uses the formula: T = C * L * f(x) where x = n/v (cars/capacity)
-// f(x) = 1.0 if x <= K, else 1.0 + exp(x)
+// 交通计算的无状态工具类
+// 使用公式: T = C * L * f(x) 其中 x = n/v (车辆数/容量)
+// f(x) = 1.0 如果 x <= K, 否则 1.0 + exp(x)
 class TrafficModel {
 public:
-    // Constants
-    static constexpr double C = 1.0;  // Time constant
-    static constexpr double K = 1.0;  // Threshold for congestion
-    static constexpr double VISUAL_YELLOW_RATIO = 0.25;  // Show moderate load earlier in the heatmap
-    static constexpr double VISUAL_RED_RATIO = 0.5;      // Heavy load for visualization
+    // 常量
+    static constexpr double C = 1.0;  // 时间常数
+    static constexpr double K = 1.0;  // 拥堵阈值
+    static constexpr double VISUAL_YELLOW_RATIO = 0.25;  // 在热力图中更早显示中等负载
+    static constexpr double VISUAL_RED_RATIO = 0.5;      // 可视化的重度负载
 
-    // Calculate travel time for an edge
-    // length: physical length of the edge (L)
-    // capacity: maximum vehicle capacity (v)
-    // currentCount: current number of cars on edge (n)
-    // Returns: travel time T = C * L * f(x) where x = n/v
+    // 计算边的行驶时间
+    // length: 边的物理长度 (L)
+    // capacity: 最大车辆容量 (v)
+    // currentCount: 边上当前的车辆数 (n)
+    // 返回: 行驶时间 T = C * L * f(x) 其中 x = n/v
     static double calculateTravelTime(double length, double capacity, double currentCount);
 
-    // Get the congestion ratio (n/v)
+    // 获取拥堵比率 (n/v)
     static double getCongestionRatio(double capacity, double currentCount);
 
-    // Get congestion status for visualization
-    // Returns: 0 = Green (free flow), 1 = Yellow (moderate), 2 = Red (congested)
+    // 获取可视化的拥堵状态
+    // 返回: 0 = 绿色（畅通）, 1 = 黄色（中等）, 2 = 红色（拥堵）
     static int getCongestionStatus(double capacity, double currentCount);
 };
 

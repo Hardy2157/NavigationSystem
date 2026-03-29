@@ -4,18 +4,18 @@
 namespace nav {
 
 double TrafficModel::calculateTravelTime(double length, double capacity, double currentCount) {
-    // Avoid division by zero
+    // 避免除以零
     if (capacity <= 0.0) {
-        return length * C;  // Default to free flow if capacity is invalid
+        return length * C;  // 如果容量无效则默认为畅通
     }
 
     double ratio = currentCount / capacity;  // x = n/v
 
     if (ratio <= K) {
-        // Free flow: T = C * L * 1.0
+        // 畅通：T = C * L * 1.0
         return C * length * 1.0;
     } else {
-        // Congested: T = C * L * (1.0 + exp(x))
+        // 拥堵：T = C * L * (1.0 + exp(x))
         return C * length * (1.0 + std::exp(ratio));
     }
 }
@@ -31,11 +31,11 @@ int TrafficModel::getCongestionStatus(double capacity, double currentCount) {
     double ratio = getCongestionRatio(capacity, currentCount);
 
     if (ratio < VISUAL_YELLOW_RATIO) {
-        return 0;  // Green - low load
+        return 0;  // 绿色 - 低负载
     } else if (ratio < VISUAL_RED_RATIO) {
-        return 1;  // Yellow - moderate congestion
+        return 1;  // 黄色 - 中等拥堵
     } else {
-        return 2;  // Red - heavy congestion
+        return 2;  // 红色 - 严重拥堵
     }
 }
 

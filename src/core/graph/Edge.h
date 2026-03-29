@@ -6,7 +6,7 @@
 
 namespace nav {
 
-// Edge class representing a connection between two nodes
+// 边类，表示两个节点之间的连接
 class Edge {
 public:
     using Id = uint32_t;
@@ -15,7 +15,7 @@ public:
     Edge();
     Edge(Id id, Node::Id source, Node::Id target, double length);
 
-    // Getters
+    // 获取器
     Id getId() const { return id_; }
     Node::Id getSource() const { return source_; }
     Node::Id getTarget() const { return target_; }
@@ -23,11 +23,11 @@ public:
     double getCapacity() const { return capacity_; }
     uint32_t getCarCount() const { return carCount_; }
 
-    // Setters
+    // 设置器
     void setCapacity(double capacity) { capacity_ = capacity; }
     void setCarCount(uint32_t count) { carCount_ = count; }
 
-    // Traffic management
+    // 交通管理
     void incrementCarCount() { ++carCount_; }
     void decrementCarCount() { if (carCount_ > 0) --carCount_; }
 
@@ -35,9 +35,9 @@ private:
     Id id_;
     Node::Id source_;
     Node::Id target_;
-    double length_;        // Physical length of the edge
-    double capacity_;      // Maximum vehicle capacity (v)
-    uint32_t carCount_;    // Current number of cars on this edge (n)
+    double length_;        // 边的物理长度
+    double capacity_;      // 最大车辆容量 (v)
+    uint32_t carCount_;    // 当前边上的车辆数 (n)
 };
 
 } // namespace nav

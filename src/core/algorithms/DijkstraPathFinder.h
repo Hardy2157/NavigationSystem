@@ -6,8 +6,8 @@
 
 namespace nav {
 
-// Dijkstra's shortest path algorithm
-// Uses edge length as the cost function
+// Dijkstra 最短路径算法
+// 使用边长度作为开销函数
 class DijkstraPathFinder : public PathFinder {
 public:
     DijkstraPathFinder() = default;
@@ -15,7 +15,7 @@ public:
     PathResult findPath(const Graph& graph, Node::Id start, Node::Id end) override;
 
 private:
-    // Reconstruct the path from start to end using predecessor map
+    // 使用前驱映射重建从起点到终点的路径
     void reconstructPath(const Graph& graph,
                         Node::Id start,
                         Node::Id end,

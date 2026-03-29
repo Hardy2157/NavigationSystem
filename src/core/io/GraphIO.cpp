@@ -20,14 +20,14 @@ bool GraphIO::save(const std::string& filepath, const Graph& graph,
 
     out << std::fixed << std::setprecision(10);
 
-    // Header
+    // 头部
     out << "NAVMAP 1.0\n";
     out << "WIDTH " << mapWidth << "\n";
     out << "HEIGHT " << mapHeight << "\n";
     out << "NODES " << graph.getNodeCount() << "\n";
     out << "EDGES " << graph.getEdgeCount() << "\n";
 
-    // Nodes
+    // 节点
     for (const auto& pair : graph.getNodes()) {
         const Node& node = pair.second;
         out << "NODE " << node.getId()
@@ -35,7 +35,7 @@ bool GraphIO::save(const std::string& filepath, const Graph& graph,
             << " " << node.getPosition().y << "\n";
     }
 
-    // Edges
+    // 边
     for (const auto& pair : graph.getEdges()) {
         const Edge& edge = pair.second;
         out << "EDGE " << edge.getId()
@@ -74,7 +74,7 @@ bool GraphIO::load(const std::string& filepath, MapFileData& outData) {
     int lineNum = 0;
     const std::locale classic = std::locale::classic();
 
-    // Read header
+    // 读取头部
     if (!std::getline(in, line)) {
         lastError_ = "Empty file";
         return false;
@@ -85,7 +85,7 @@ bool GraphIO::load(const std::string& filepath, MapFileData& outData) {
         return false;
     }
 
-    // Read metadata lines
+    // 读取元数据行
     while (std::getline(in, line)) {
         lineNum++;
         std::istringstream iss(line);
@@ -102,7 +102,7 @@ bool GraphIO::load(const std::string& filepath, MapFileData& outData) {
         } else if (keyword == "EDGES") {
             iss >> expectedEdges;
         } else if (keyword == "NODE" || keyword == "EDGE" || keyword == "END") {
-            // First data line — process below
+            // 第一个数据行 — 在下面处理
             break;
         }
     }
@@ -111,7 +111,7 @@ bool GraphIO::load(const std::string& filepath, MapFileData& outData) {
         outData.graph.reserve(expectedNodes, expectedEdges);
     }
 
-    // Process data lines (first one already in 'line')
+    // 处理数据行（第一行已在 'line' 中）
     do {
         std::istringstream iss(line);
         iss.imbue(classic);

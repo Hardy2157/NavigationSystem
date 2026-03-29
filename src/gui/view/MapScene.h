@@ -23,53 +23,53 @@ class MapScene : public QGraphicsScene {
 public:
     explicit MapScene(QObject* parent = nullptr);
 
-    // Load a graph into the scene
+    // 将图加载到场景中
     void loadMap(const Graph& graph);
 
-    // Clear all map items
+    // 清除所有地图项
     void clearMap();
 
-    // Get items by ID for updates
+    // 通过 ID 获取项以进行更新
     NodeItem* getNodeItem(Node::Id id) const;
     EdgeItem* getEdgeItem(Edge::Id id) const;
 
-    // Update edge style based on congestion
+    // 根据拥堵情况更新边样式
     void updateEdgeCongestion(Edge::Id id, int congestionStatus);
 
-    // Set the graph reference for pathfinding
+    // 设置用于路径查找的图引用
     void setGraph(Graph* graph) { graph_ = graph; }
     Graph* getGraph() const { return graph_; }
 
-    // Set the pathfinder to use
+    // 设置要使用的路径查找器
     void setPathFinder(PathFinder* pathfinder) { pathfinder_ = pathfinder; }
 
-    // Heatmap visibility (kept in sync by MainWindow)
+    // 热力图可见性（由 MainWindow 保持同步）
     void setHeatmapVisible(bool visible) { heatmapVisible_ = visible; }
     bool isHeatmapVisible() const { return heatmapVisible_; }
 
-    // Clear current path selection
+    // 清除当前路径选择
     void clearPathSelection();
 
-    // Get all node items for LOD updates
+    // 获取所有节点项以进行 LOD 更新
     const std::unordered_map<Node::Id, NodeItem*>& getNodeItems() const { return nodeItems_; }
 
-    // Highlight a list of nodes (for spatial query results)
+    // 高亮显示节点列表（用于空间查询结果）
     void highlightNodes(const std::vector<Node::Id>& nodeIds, const QColor& color);
 
-    // Highlight a list of edges (for spatial query results)
+    // 高亮显示边列表（用于空间查询结果）
     void highlightEdges(const std::vector<Edge::Id>& edgeIds, const QColor& color);
 
-    // Clear spatial query highlights
+    // 清除空间查询高亮
     void clearSpatialHighlights();
 
-    // Find path by explicit node IDs (for control panel)
+    // 通过显式节点 ID 查找路径（用于控制面板）
     PathResult findPathById(Node::Id startId, Node::Id endId);
 
-    // Show query point marker
+    // 显示查询点标记
     void showQueryPoint(double x, double y);
     void showTrafficPoint(double x, double y);
 
-    // Traffic visualization for localized view (F4)
+    // 局部视图的交通可视化 (F4)
     void showTrafficEdges(const std::vector<Edge::Id>& edgeIds, const Graph& graph);
     void clearTrafficHighlights();
     void updateTrafficHighlights(const Graph& graph);
@@ -93,25 +93,25 @@ private:
     std::unordered_map<Node::Id, NodeItem*> nodeItems_;
     std::unordered_map<Edge::Id, EdgeItem*> edgeItems_;
 
-    // Pathfinding state
+    // 路径查找状态
     Graph* graph_ = nullptr;
     PathFinder* pathfinder_ = nullptr;
     bool heatmapVisible_ = false;
     Node::Id startNode_ = Node::INVALID_ID;
     Node::Id endNode_ = Node::INVALID_ID;
-    int clickState_ = 0;  // 0: waiting for start, 1: waiting for end, 2: path shown
+    int clickState_ = 0;  // 0: 等待起点, 1: 等待终点, 2: 路径已显示
 
-    // Path visualization
+    // 路径可视化
     QGraphicsPathItem* pathItem_ = nullptr;
     QColor originalStartColor_;
     QColor originalEndColor_;
 
-    // Spatial query visualization
+    // 空间查询可视化
     std::vector<Node::Id> highlightedNodes_;
     std::unordered_set<Edge::Id> highlightedEdges_;
     QGraphicsEllipseItem* queryPointMarker_ = nullptr;
 
-    // Traffic localized view (F4)
+    // 交通局部视图 (F4)
     std::vector<Edge::Id> trafficHighlightedEdges_;
     QGraphicsEllipseItem* trafficPointMarker_ = nullptr;
 };
