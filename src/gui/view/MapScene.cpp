@@ -1,7 +1,9 @@
 #include "gui/view/MapScene.h"
 #include "gui/items/NodeItem.h"
 #include "gui/items/EdgeItem.h"
+#include "gui/items/ClusterItem.h"
 #include "core/traffic/TrafficModel.h"
+#include "core/spatial/ClusterIndex.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QPainterPath>
 #include <QPen>
@@ -49,7 +51,8 @@ void MapScene::loadMap(const Graph& graph) {
             EdgeItem* item = new EdgeItem(
                 edge.getId(),
                 sourceNode->getPosition(),
-                targetNode->getPosition()
+                targetNode->getPosition(),
+                edge.getRoadClass()
             );
             addItem(item);
             edgeItems_[edge.getId()] = item;
@@ -82,12 +85,66 @@ void MapScene::clearMap() {
     highlightedNodes_.clear();
     highlightedEdges_.clear();
     trafficHighlightedEdges_.clear();
+    clusterLevels_.clear();
+    activeClusterLevel_ = -1;
     startNode_ = Node::INVALID_ID;
     endNode_ = Node::INVALID_ID;
     clickState_ = 0;
     pathItem_ = nullptr;
     queryPointMarker_ = nullptr;
     trafficPointMarker_ = nullptr;
+}
+
+void MapScene::resetAllEdgeStyles() {
+    for (auto& pair : edgeItems_) {
+        pair.second->applyBaseStyle();
+    }
+}
+
+void MapScene::buildClusters(const Graph& graph, double mapWidth, double mapHeight) {
+    // 清除旧聚类项
+    for (auto& level : clusterLevels_) {
+        for (ClusterItem* item : level) {
+            removeItem(item);
+            delete item;
+        }
+    }
+    clusterLevels_.clear();
+    activeClusterLevel_ = -1;
+
+    // 构建多分辨率聚类索引
+    double maxDim = std::max(mapWidth, mapHeight);
+    std::vector<double> cellSizes = {
+        maxDim / 15.0,   // Level 0: 粗粒度（低缩放）
+        maxDim / 50.0    // Level 1: 细粒度（中缩放）
+    };
+
+    ClusterIndex index;
+    index.buildMultiResolution(graph, mapWidth, mapHeight, cellSizes);
+
+    // 为每个层级创建可视化项
+    for (const auto& level : index.getLevels()) {
+        std::vector<ClusterItem*> items;
+        for (const auto& cluster : level.clusters) {
+            ClusterItem* item = new ClusterItem(cluster.position, cluster.memberCount);
+            item->setVisible(false);
+            addItem(item);
+            items.push_back(item);
+        }
+        clusterLevels_.push_back(std::move(items));
+    }
+}
+
+void MapScene::setActiveClusterLevel(int level) {
+    if (level == activeClusterLevel_) return;
+    activeClusterLevel_ = level;
+
+    for (int i = 0; i < static_cast<int>(clusterLevels_.size()); ++i) {
+        bool visible = (i == level);
+        for (ClusterItem* item : clusterLevels_[i]) {
+            item->setVisible(visible);
+        }
+    }
 }
 
 NodeItem* MapScene::getNodeItem(Node::Id id) const {
@@ -314,7 +371,6 @@ void MapScene::clearSpatialHighlights() {
                 }
             }
             item->updateStyle(status);
-            item->setZValue(0.0);
         }
     }
     highlightedEdges_.clear();
@@ -414,7 +470,6 @@ void MapScene::clearTrafficHighlights() {
                 }
             }
             item->updateStyle(status);
-            item->setZValue(0.0);
         }
     }
     trafficHighlightedEdges_.clear();

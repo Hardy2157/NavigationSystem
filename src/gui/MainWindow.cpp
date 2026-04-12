@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget* parent)
     , mapScene_(nullptr)
     , controlPanel_(nullptr)
     , graph_(std::make_unique<Graph>())
-    , generator_(std::make_unique<GridPerturbationGenerator>())
+    , generator_(std::make_unique<HierarchicalRoadGenerator>())
     , dijkstraPathfinder_(std::make_unique<DijkstraPathFinder>())
     , dynamicPathfinder_(std::make_unique<DynamicPathFinder>())
     , simulationTimer_(new QTimer(this))
@@ -150,6 +150,7 @@ void MainWindow::setupControlPanel() {
 
 void MainWindow::loadGraph(const Graph& graph) {
     mapScene_->loadMap(graph);
+    mapScene_->buildClusters(graph, mapWidth_, mapHeight_);
     mapScene_->setGraph(graph_.get());
     updatePathfinder();
     rebuildQuadTree();
@@ -190,10 +191,10 @@ void MainWindow::startSimulation() {
 
     // 根据图大小缩放交通负载
     static constexpr int kEdgesPerSpawn = 500;
-    static constexpr int kMinSpawnRate  = 20;
-    static constexpr int kMaxSpawnRate  = 40;
+    static constexpr int kMinSpawnRate  = 5;
+    static constexpr int kMaxSpawnRate  = 30;
     static constexpr int kEdgeToCarDiv  = 4;
-    static constexpr int kMinMaxCars    = 3000;
+    static constexpr int kMinMaxCars    = 500;
     static constexpr int kMaxMaxCars    = 5000;
 
     const int edgeCount = static_cast<int>(graph_->getEdgeCount());

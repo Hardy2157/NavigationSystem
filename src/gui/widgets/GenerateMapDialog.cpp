@@ -21,18 +21,18 @@ void GenerateMapDialog::setupUi() {
     QGroupBox* settingsGroup = new QGroupBox("地图设置", this);
     QFormLayout* formLayout = new QFormLayout(settingsGroup);
 
-    // 节点数量（最少 10,000）
+    // 节点数量（最少 500）
     nodeCountSpinBox_ = new QSpinBox();
-    nodeCountSpinBox_->setRange(10000, 1000000);
-    nodeCountSpinBox_->setValue(10000);
-    nodeCountSpinBox_->setSingleStep(1000);
-    nodeCountSpinBox_->setToolTip("节点数量（最少 10,000）");
-    formLayout->addRow("节点数量 (N >= 10000):", nodeCountSpinBox_);
+    nodeCountSpinBox_->setRange(500, 1000000);
+    nodeCountSpinBox_->setValue(3000);
+    nodeCountSpinBox_->setSingleStep(500);
+    nodeCountSpinBox_->setToolTip("节点数量（最少 500）");
+    formLayout->addRow("节点数量 (N >= 500):", nodeCountSpinBox_);
 
     // 地图宽度
     widthSpinBox_ = new QDoubleSpinBox();
     widthSpinBox_->setRange(1000.0, 100000.0);
-    widthSpinBox_->setValue(10000.0);
+    widthSpinBox_->setValue(5000.0);
     widthSpinBox_->setSingleStep(1000.0);
     widthSpinBox_->setDecimals(0);
     formLayout->addRow("地图宽度:", widthSpinBox_);
@@ -40,7 +40,7 @@ void GenerateMapDialog::setupUi() {
     // 地图高度
     heightSpinBox_ = new QDoubleSpinBox();
     heightSpinBox_->setRange(1000.0, 100000.0);
-    heightSpinBox_->setValue(10000.0);
+    heightSpinBox_->setValue(5000.0);
     heightSpinBox_->setSingleStep(1000.0);
     heightSpinBox_->setDecimals(0);
     formLayout->addRow("地图高度:", heightSpinBox_);

@@ -6,7 +6,9 @@ add_library(NavigationCore STATIC
     core/io/GraphIO.cpp
     core/spatial/BoundingBox.cpp
     core/spatial/QuadTree.cpp
+    core/spatial/ClusterIndex.cpp
     core/generation/GridPerturbationGenerator.cpp
+    core/generation/HierarchicalRoadGenerator.cpp
     core/algorithms/DijkstraPathFinder.cpp
     core/algorithms/DynamicPathFinder.cpp
     core/traffic/TrafficModel.cpp
@@ -21,6 +23,7 @@ target_include_directories(NavigationCore PUBLIC
 add_library(NavigationGui STATIC
     gui/items/NodeItem.cpp
     gui/items/EdgeItem.cpp
+    gui/items/ClusterItem.cpp
     gui/view/MapScene.cpp
     gui/view/MapView.cpp
     gui/widgets/ControlPanel.cpp

@@ -21,7 +21,7 @@ bool GraphIO::save(const std::string& filepath, const Graph& graph,
     out << std::fixed << std::setprecision(10);
 
     // 头部
-    out << "NAVMAP 1.0\n";
+    out << "NAVMAP 2.0\n";
     out << "WIDTH " << mapWidth << "\n";
     out << "HEIGHT " << mapHeight << "\n";
     out << "NODES " << graph.getNodeCount() << "\n";
@@ -42,7 +42,8 @@ bool GraphIO::save(const std::string& filepath, const Graph& graph,
             << " " << edge.getSource()
             << " " << edge.getTarget()
             << " " << edge.getLength()
-            << " " << edge.getCapacity() << "\n";
+            << " " << edge.getCapacity()
+            << " " << static_cast<int>(edge.getRoadClass()) << "\n";
     }
 
     out << "END\n";
@@ -84,6 +85,8 @@ bool GraphIO::load(const std::string& filepath, MapFileData& outData) {
         lastError_ = "Invalid file format: missing NAVMAP header";
         return false;
     }
+    // 检测版本号（1.0 或 2.0）
+    bool isVersion2 = (line.find("2.0") != std::string::npos);
 
     // 读取元数据行
     while (std::getline(in, line)) {
@@ -134,7 +137,15 @@ bool GraphIO::load(const std::string& filepath, MapFileData& outData) {
                 lastError_ = "Parse error at line " + std::to_string(lineNum) + ": invalid EDGE";
                 return false;
             }
-            if (outData.graph.addEdgeWithId(id, source, target, length, capacity) == Edge::INVALID_ID) {
+            // v2 格式包含道路等级字段
+            RoadClass roadClass = RoadClass::Local;
+            if (isVersion2) {
+                int rc = 2;
+                if (iss >> rc) {
+                    roadClass = static_cast<RoadClass>(rc);
+                }
+            }
+            if (outData.graph.addEdgeWithId(id, source, target, length, capacity, roadClass) == Edge::INVALID_ID) {
                 lastError_ = "Parse error at line " + std::to_string(lineNum) + ": edge references missing node";
                 return false;
             }

@@ -32,20 +32,26 @@ Node* Graph::getNode(Node::Id id) {
 }
 
 Edge::Id Graph::addEdge(Node::Id source, Node::Id target) {
+    return addEdge(source, target, RoadClass::Local);
+}
+
+Edge::Id Graph::addEdge(Node::Id source, Node::Id target, RoadClass roadClass) {
     const Node* s = getNode(source);
     const Node* t = getNode(target);
     if (!s || !t) return Edge::INVALID_ID;
     double length = s->getPosition().distanceTo(t->getPosition());
-    return addEdgeWithId(nextEdgeId_++, source, target, length, 10.0);
+    return addEdgeWithId(nextEdgeId_++, source, target, length, 10.0, roadClass);
 }
 
 Edge::Id Graph::addEdgeWithId(Edge::Id id, Node::Id source, Node::Id target,
-                               double length, double capacity) {
+                               double length, double capacity,
+                               RoadClass roadClass) {
     if (nodes_.find(source) == nodes_.end() || nodes_.find(target) == nodes_.end()) {
         return Edge::INVALID_ID;
     }
     Edge edge(id, source, target, length);
     edge.setCapacity(capacity);
+    edge.setRoadClass(roadClass);
     edges_.emplace(id, edge);
     adjacencyList_[source].push_back(id);
     adjacencyList_[target].push_back(id);

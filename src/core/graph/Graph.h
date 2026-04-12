@@ -24,8 +24,10 @@ public:
 
     // 边操作
     Edge::Id addEdge(Node::Id source, Node::Id target);
+    Edge::Id addEdge(Node::Id source, Node::Id target, RoadClass roadClass);
     Edge::Id addEdgeWithId(Edge::Id id, Node::Id source, Node::Id target,
-                           double length, double capacity);
+                           double length, double capacity,
+                           RoadClass roadClass = RoadClass::Local);
     const Edge* getEdge(Edge::Id id) const;
     Edge* getEdge(Edge::Id id);
     size_t getEdgeCount() const { return edges_.size(); }

@@ -11,6 +11,7 @@
 #include "core/graph/Node.h"
 #include "core/graph/Edge.h"
 #include "core/algorithms/PathFinder.h"
+#include "gui/items/ClusterItem.h"
 
 namespace nav {
 
@@ -53,6 +54,16 @@ public:
     // 获取所有节点项以进行 LOD 更新
     const std::unordered_map<Node::Id, NodeItem*>& getNodeItems() const { return nodeItems_; }
 
+    // 获取所有边项以进行 LOD 更新
+    const std::unordered_map<Edge::Id, EdgeItem*>& getEdgeItems() const { return edgeItems_; }
+
+    // 将所有边恢复为道路等级默认样式
+    void resetAllEdgeStyles();
+
+    // 聚类可视化
+    void buildClusters(const Graph& graph, double mapWidth, double mapHeight);
+    void setActiveClusterLevel(int level);
+
     // 高亮显示节点列表（用于空间查询结果）
     void highlightNodes(const std::vector<Node::Id>& nodeIds, const QColor& color);
 
@@ -74,6 +85,7 @@ public:
     void clearTrafficHighlights();
     void updateTrafficHighlights(const Graph& graph);
     const std::vector<Edge::Id>& getTrafficHighlightedEdges() const { return trafficHighlightedEdges_; }
+    const std::unordered_set<Edge::Id>& getHighlightedEdges() const { return highlightedEdges_; }
 
 signals:
     void pathFound(const PathResult& result);
@@ -114,6 +126,10 @@ private:
     // 交通局部视图 (F4)
     std::vector<Edge::Id> trafficHighlightedEdges_;
     QGraphicsEllipseItem* trafficPointMarker_ = nullptr;
+
+    // 聚类可视化（多分辨率）
+    std::vector<std::vector<ClusterItem*>> clusterLevels_;
+    int activeClusterLevel_ = -1;
 };
 
 } // namespace nav

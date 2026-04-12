@@ -22,6 +22,10 @@ public:
     void setHighlighted(bool highlighted);
     bool isHighlighted() const { return m_isHighlighted; }
 
+    // 判断节点是否处于交互状态（高亮/选中/路径上）
+    // LOD 使用此方法确保交互节点在所有缩放级别可见
+    bool isInteractive() const { return m_isHighlighted; }
+
     // 重写 boundingRect 以包含整个可点击区域（对 Qt 的 BSP 树至关重要）
     QRectF boundingRect() const override;
 

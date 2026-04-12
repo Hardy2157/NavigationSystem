@@ -115,11 +115,12 @@ void TrafficSimulator::spawnCars() {
 
 double TrafficSimulator::computeTravelTime(const Edge* edge) const {
     if (!edge) return 1.0;
-    return TrafficModel::calculateTravelTime(
+    double baseTime = TrafficModel::calculateTravelTime(
         edge->getLength(),
         edge->getCapacity(),
         static_cast<double>(edge->getCarCount())
     );
+    return baseTime / roadClassSpeedFactor(edge->getRoadClass());
 }
 
 void TrafficSimulator::reset() {

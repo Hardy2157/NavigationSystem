@@ -3,6 +3,7 @@
 
 #include <QGraphicsView>
 #include <QRectF>
+#include "gui/view/DisplayFilter.h"
 
 namespace nav {
 
@@ -35,8 +36,8 @@ private:
     static constexpr double ZOOM_FACTOR = 1.15;
     static constexpr double MIN_ZOOM = 0.01;
     static constexpr double MAX_ZOOM = 100.0;
-    static constexpr double LOD_THRESHOLD = 0.5;  // 在此缩放级别以下隐藏节点
 
+    DisplayFilter displayFilter_;
     double currentZoom_ = 1.0;
 };
 

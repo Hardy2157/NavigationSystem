@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <memory>
 #include "core/graph/Graph.h"
-#include "core/generation/GridPerturbationGenerator.h"
+#include "core/generation/HierarchicalRoadGenerator.h"
 #include "core/algorithms/DijkstraPathFinder.h"
 #include "core/algorithms/DynamicPathFinder.h"
 #include "core/traffic/TrafficSimulator.h"
@@ -29,7 +29,7 @@ public:
     void loadGraph(const Graph& graph);
 
     // 生成新的随机地图
-    void generateNewMap(int numNodes = 10000, double width = 10000.0, double height = 10000.0);
+    void generateNewMap(int numNodes = 3000, double width = 5000.0, double height = 5000.0);
 
 private slots:
     void onGenerateMap();
@@ -61,7 +61,7 @@ private:
     ControlPanel* controlPanel_;
 
     std::unique_ptr<Graph> graph_;
-    std::unique_ptr<GridPerturbationGenerator> generator_;
+    std::unique_ptr<HierarchicalRoadGenerator> generator_;
     std::unique_ptr<TrafficSimulator> simulator_;
     std::unique_ptr<DijkstraPathFinder> dijkstraPathfinder_;
     std::unique_ptr<DynamicPathFinder> dynamicPathfinder_;
@@ -72,8 +72,8 @@ private:
     bool simulationRunning_ = false;
     bool heatmapVisible_ = false;  // 可视化热力图显示的开关
 
-    double mapWidth_ = 10000.0;
-    double mapHeight_ = 10000.0;
+    double mapWidth_ = 5000.0;
+    double mapHeight_ = 5000.0;
 };
 
 } // namespace nav

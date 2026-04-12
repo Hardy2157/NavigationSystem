@@ -9,6 +9,7 @@ Edge::Edge()
     , length_(0.0)
     , capacity_(10.0)  // 默认容量
     , carCount_(0)
+    , roadClass_(RoadClass::Local)
 {}
 
 Edge::Edge(Id id, Node::Id source, Node::Id target, double length)
@@ -18,6 +19,7 @@ Edge::Edge(Id id, Node::Id source, Node::Id target, double length)
     , length_(length)
     , capacity_(10.0)  // 默认容量
     , carCount_(0)
+    , roadClass_(RoadClass::Local)
 {}
 
 } // namespace nav

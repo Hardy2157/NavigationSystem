@@ -69,12 +69,12 @@ PathResult DynamicPathFinder::findPath(const Graph& graph, Node::Id start, Node:
                 continue;
             }
 
-            // 使用交通模型计算行驶时间（而不是原始长度）
+            // 使用交通模型计算行驶时间（考虑道路等级速度因子）
             double travelTime = TrafficModel::calculateTravelTime(
                 edge->getLength(),
                 edge->getCapacity(),
                 static_cast<double>(edge->getCarCount())
-            );
+            ) / roadClassSpeedFactor(edge->getRoadClass());
 
             double newDist = dist[currentNode] + travelTime;
 
